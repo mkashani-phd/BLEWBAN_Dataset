@@ -249,7 +249,7 @@ class Utills:
             return x[offSet: min(len(x), len(y))] - y[0: min(len(x),len(y)) - offSet]
 
     def plotter(self,IQdata,tindx, batch, frameShowLimit = -1,info = True,fft = False,compression_ratio = 15):
-        if frameShowLimit == -1:
+        if frameShowLimit == -1 or frameShowLimit > len(IQdata.TotalFramesIndex):
             frameShowLimit = len(IQdata.TotalFramesIndex)
         if batch == -1:
             batch = frameShowLimit
