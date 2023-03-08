@@ -16,15 +16,20 @@ class IQdata:
     2474000000,2476000000,2478000000,2402000000,2426000000,2480000000])
     samples = None
     TotalFramesIndex = None
+    tindx = None
+    len = 0
     Fc = 2.455e9
     Fs = 100e6
-    def __init__(self, samples,Fc = None, Fs = None):
+    def __init__(self, samples,tindx,Fc = None, Fs = None):
         self.samples = samples
         self.TotalFramesIndex = self.frameFinder(samples)
+        self.len = len(self.TotalFramesIndex)
         if Fs is not None:
             self.Fs = Fs
         if Fc is not None:
             self.Fc = Fc
+        self.tindx = tindx.reshape(-1,2)
+
     def isList(self, input):
         return isinstance(input, list) or isinstance(input,np.ndarray)
     
@@ -53,6 +58,10 @@ class IQdata:
 
     def frameByNumber(self,frame_nr:int):
         return self.frameByIndex(self.TotalFramesIndex[frame_nr])
+    
+    def lenFrame(self,frame_nr:int):
+        frame = self.inputCheck(frame_nr)
+        return len(frame)
 
     def fft(self,frame_nr:int | np.ndarray):
         frame = self.inputCheck(frame_nr)
@@ -212,7 +221,7 @@ class Utills:
                 Fc = Fc_from_name
             if Fs is None:
                 Fs = Fs_from_name
-            IQdatas = IQdata(IQsamples,Fc=int(float(Fc)),Fs=int(float(Fs)))
+            IQdatas = IQdata(IQsamples,tindx,Fc=int(float(Fc)),Fs=int(float(Fs)))
             print("File name has a correct format!")
         except:
             Fc = 2.444e9
