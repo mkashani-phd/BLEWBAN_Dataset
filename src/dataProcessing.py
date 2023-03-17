@@ -14,13 +14,16 @@ class IQdata:
     2450000000,2452000000,2454000000,2456000000,2458000000,2460000000,
     2462000000,2464000000,2466000000,2468000000,2470000000,2472000000,
     2474000000,2476000000,2478000000,2402000000,2426000000,2480000000])
+    
+    path = None
     samples = None
     TotalFramesIndex = None
     tindx = None
     len = 0
     Fc = 2.455e9
     Fs = 100e6
-    def __init__(self, samples,tindx,Fc = None, Fs = None):
+    def __init__(self, path, samples,tindx,Fc = None, Fs = None):
+        self.path = path
         self.samples = samples
         self.TotalFramesIndex = self.frameFinder(samples)
         self.len = len(self.TotalFramesIndex)
@@ -82,7 +85,53 @@ class IQdata:
             return np.where(abs(self.BLEChnls-c0) <1e6)[0][0]
         except:
             return -1
+    def isServer(self, frame_nr): # return true if frame is server frame or Unkonwn frame
+        frame = self.inputCheck(frame_nr)
+        try:
+            frame_ahead = self.inputCheck(frame_nr+1)
+        except:
+            return True
+        
+        # if frame is channel 37,38,39 (or) channel is different from next frame then it is server frame
+        if self.channelDetection(frame) in [37,38,39]:
+            return True
+        
+        if self.channelDetection(frame) != self.channelDetection(frame_ahead):
+            return True
 
+        return False
+    
+    def getMetaData(self, frame_nr: int, include_frame = False):
+        metaData = {}
+
+        if self.isServer(frame_nr):
+            return 0
+
+        metaData['frame_origin_file'] = self.path
+        metaData['frame_nr'] = frame_nr
+        metaData['date'] = self.path.split('_')[3].split('/')[-1].split('-')[1] + ' ' + self.path.split('_')[3].split('/')[-1].split('-')[2] + ' 2023'
+        metaData['dvc'] = self.path.split('_')[3].split('/')[-1].split('-')[4]
+        metaData['pos'] = self.path.split('_')[3].split('/')[-1].split('-')[6]
+
+        cnt = 0
+        for meta in ['SDR', 'test','txPower']:
+            metaData[meta] = self.path.split('_')[3].split('/')[cnt]
+            cnt+=1
+        
+        metaData['antenna'] = self.path.split('/')[-1].split('_')[-1].split('.')[0]
+        metaData['Fs'] = self.Fs
+        metaData['Fc'] = self.Fc
+        metaData['gain'] = self.path.split('/')[-1].split('_')[3]
+        metaData['frameTime'] = self.tindx[frame_nr]
+        metaData['lenFrame'] = self.tindx[frame_nr][1] - self.tindx[frame_nr][0]
+        metaData['frameChnl'] = self.channelDetection(frame_nr)
+        metaData['frameDecode'] = self.MACDetection(frame_nr)
+
+        if include_frame:
+            metaData['frame'] = self.frameByNumber(frame_nr)
+
+        return metaData
+    
     def demodulator(self,frame_nr:int | np.ndarray):
         frame = self.inputCheck(frame_nr)
         chnl = self.channelDetection(frame)
@@ -215,18 +264,18 @@ class Utills:
         IQsamples = np.fromfile(file, np.complex64)
         tindx = np.fromfile(file+".tindx",sep= ',')
         try:
-            file  = file.split('/')[-1] # handles the directory
-            name, Fc_from_name, Fs_from_name, gain, acq_time, inchamber, extenstion = file.split('_')
+            temp  = file.split('/')[-1] # handles the directory
+            name, Fc_from_name, Fs_from_name, gain, acq_time, inchamber, extenstion = temp.split('_')
             if Fc is None:
                 Fc = Fc_from_name
             if Fs is None:
                 Fs = Fs_from_name
-            IQdatas = IQdata(IQsamples,tindx,Fc=int(float(Fc)),Fs=int(float(Fs)))
+            IQdatas = IQdata(path = file, samples = IQsamples,tindx = tindx,Fc=int(float(Fc)),Fs=int(float(Fs)))
             print("File name has a correct format!")
         except:
             Fc = 2.444e9
             Fs = 100e6
-            IQdatas = IQdata(IQsamples,Fc=Fc ,Fs=Fs)
+            IQdatas = IQdata(path = file, samples = IQsamples,tindx = tindx,Fc=Fc ,Fs=Fs)
         return IQdatas,tindx
 
 
