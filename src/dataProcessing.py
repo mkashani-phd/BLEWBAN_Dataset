@@ -122,13 +122,20 @@ class IQdata:
         metaData['Fs'] = self.Fs
         metaData['Fc'] = self.Fc
         metaData['gain'] = self.path.split('/')[-1].split('_')[3]
-        metaData['frameTime'] = self.tindx[frame_nr]
+        metaData['frameTime'] = self.tindx[frame_nr].tolist()
         metaData['lenFrame'] = self.tindx[frame_nr][1] - self.tindx[frame_nr][0]
-        metaData['frameChnl'] = self.channelDetection(frame_nr)
-        metaData['frameDecode'] = self.MACDetection(frame_nr)
+        metaData['frameChnl'] = int(self.channelDetection(frame_nr))
+        
+        t= np.linspace(.01,1,60)
+        decoded = self.decode(frame_nr, lpf = np.sin(t)/t)
+        metaData['frameDecode'] = decoded[1]
+        metaData['bitLen'] = decoded[2].tolist()
+        metaData['max_gradient_unwrapped_phase'] = decoded[3].tolist()
 
         if include_frame:
-            metaData['frame'] = self.frameByNumber(frame_nr)
+            metaData['I'] = np.real(self.frameByNumber(frame_nr)).tolist()
+            metaData['Q'] = np.imag(self.frameByNumber(frame_nr)).tolist()
+
 
         return metaData
     
@@ -191,30 +198,58 @@ class IQdata:
         xpx[xpx<0] = 0
         xnx[xnx>0] = 0
 
-        pIndx = self.frameFinder(samples=xpx,farmeBiggerThan=10)
-        nIndx = self.frameFinder(samples=xnx,farmeBiggerThan=10)
+        pIndx = self.frameFinder(samples=xpx,farmeBiggerThan=30)
+        nIndx = self.frameFinder(samples=xnx,farmeBiggerThan=30)
         pDecode = []
         nDecode = []
+        pLen = [] # length of the 1 bits
+        pMax = [] # max value of the 1 bits
+        nLen = [] # length of the 0 bits
+        nMax = [] # max value of the 0 bits
+
+        bitLen = []
         for i,j in pIndx:
             pDecode.append((j-i + 1) // bitSamplePeriod)
+            pLen.append(j-i+1)
+            pMax.append(np.max(xpx[i:j]))
         for i,j in nIndx:
             nDecode.append((j-i + 1) // bitSamplePeriod)
+            nLen.append(j-i+1)
+            nMax.append(np.min(xnx[i:j]))
 
+
+        if len(pIndx) < 1 or len(nIndx) < 1: # if there is  no bit in the frame
+            print(frm_nr)
+            return 0,0,np.zeros(1),np.zeros(1)
+        
+        max_gradient_unwrapped_phase = []
         if pIndx[0][0] < nIndx[0][0]:
             #zip order -> zip(p,n)
             decoded = list(zip(pDecode,nDecode))
+            bitLen = list(zip(pLen,nLen))
+            max_gradient_unwrapped_phase = list(zip(pMax,nMax))
             startingBit = 1
         else:
             #zip order -> zip(n,p)
             decoded = list(zip(nDecode,pDecode))
+            bitLen = list(zip(nLen,pLen))
+            max_gradient_unwrapped_phase = list(zip(nMax,pMax))
             startingBit = 0
+        
         # zip doesn't add the unmatched part of the array with differnet sizes
         if len(pIndx) > len(nIndx):
             decoded.append([pDecode[-1],0])
+            bitLen.append([pLen[-1],0])
+            max_gradient_unwrapped_phase.append([pMax[-1],0])
         elif len(pIndx) < len(nIndx):
             decoded.append([nDecode[-1],0])
+            bitLen.append([nLen[-1],0])
+            max_gradient_unwrapped_phase.append([nMax[-1],0])
 
+        bitLen = np.array(bitLen).flatten()
         decoded = np.array(decoded).flatten()
+        max_gradient_unwrapped_phase = np.array(max_gradient_unwrapped_phase).flatten()
+
         decoded[0] = 1
         res = []
         for bit in decoded:
@@ -253,7 +288,7 @@ class IQdata:
             # print(total_nr_bits)
             plt.show()
 
-        return res, resInHex 
+        return res, resInHex, bitLen[0:-1], max_gradient_unwrapped_phase[0:-1]
 
 
 
