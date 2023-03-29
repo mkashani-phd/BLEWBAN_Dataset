@@ -220,7 +220,7 @@ class IQdata:
 
         if len(pIndx) < 1 or len(nIndx) < 1: # if there is  no bit in the frame
             print(frm_nr)
-            return 0,0,np.zeros(1),np.zeros(1)
+            return np.zeros(1),np.zeros(1),np.zeros(1),np.zeros(1)
         
         max_gradient_unwrapped_phase = []
         if pIndx[0][0] < nIndx[0][0]:
