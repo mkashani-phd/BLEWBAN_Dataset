@@ -106,17 +106,18 @@ class IQdata:
 
         if self.isServer(frame_nr):
             return 0
-
+        print(self.path.split('/')[-4],self.path.split('/')[-3],self.path.split('/')[-2],self.path.split('/')[-1].split('_'))
         metaData['frame_origin_file'] = self.path
         metaData['frame_nr'] = frame_nr
+        # SDR_1              offBody          high-tx-PWR-9dbm     ['x310-jan-13-dvc-1-pos-2', '2440000000.0', '100000000.0', '31.5', '2', '0', '2.iq']
+    #split('/')[-4]      split('/')[-3]       split('/')[-2]       split('/')[-1].split('_')
         metaData['date'] = self.path.split('_')[3].split('/')[-1].split('-')[1] + ' ' + self.path.split('_')[3].split('/')[-1].split('-')[2] + ' 2023'
         metaData['dvc'] = self.path.split('_')[3].split('/')[-1].split('-')[4]
         metaData['pos'] = self.path.split('_')[3].split('/')[-1].split('-')[6]
+        metaData['SDR']
+        metaData['test']
+        metaData['txPower']
 
-        cnt = 0
-        for meta in ['SDR', 'test','txPower']:
-            metaData[meta] = self.path.split('_')[3].split('/')[cnt]
-            cnt+=1
         
         metaData['antenna'] = self.path.split('/')[-1].split('_')[-1].split('.')[0]
         metaData['Fs'] = self.Fs
