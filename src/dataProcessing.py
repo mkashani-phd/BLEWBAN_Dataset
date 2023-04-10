@@ -105,8 +105,8 @@ class IQdata:
         return np.fft.fftshift(np.fft.fft(frame))
     
     def rssi(self, frame_nr):
-        frame = self.inputCheck(frame_nr)
-        return np.average(np.sqrt(np.imag(frame)**2 + np.real(frame)**2))   
+        frame = self.inputCheck(frame_nr)[100:-100]
+        return 10*np.log(np.average(np.sqrt(np.imag(frame)**2 + np.real(frame)**2)))  
 
     def channelDetection(self, frame_nr:int | np.ndarray, Fc = None, Fs = None):
         if Fc is None:
@@ -141,10 +141,6 @@ class IQdata:
 
     def getMetaData(self, frame_nr: int, include_frame = False):
         metaData = {}
-
-        if self.isServer(frame_nr):
-            return 0
-        print(self.path.split('/')[-4],self.path.split('/')[-3],self.path.split('/')[-2],self.path.split('/')[-1].split('_'))
         metaData['frame_origin_file'] = self.path
         metaData['frame_nr'] = frame_nr
 
@@ -155,16 +151,19 @@ class IQdata:
         temp = self.path.split('/')[-1].split('_')[0].split('-')
         #'x310-jan-13-dvc-1-pos-2'
         metaData['date'] = temp[1] + ' ' + temp[2] + ' 2023'
-        metaData['dvc'] = temp[4]
-        metaData['pos'] = temp[6]
+
         metaData['SDR'] = self.path.split('/')[-4][-1]
         metaData['test'] = self.path.split('/')[-3]
 
         if metaData['test'] == "offBody":
+            metaData['dvc'] = temp[4]
+            metaData['pos'] = temp[6]
             metaData['txPower'] = self.path.split('/')[-2].split('-')[-1]
             metaData['antenna'] = self.path.split('/')[-1].split('_')[-1][0]
-            metaData['txPower'] = self.path.split('/')[-2].split('-')[-1]
+            
         elif metaData['test'] == "onBody":
+            metaData['dvc'] = temp[5]
+            metaData['pos'] = temp[7]
             # SDR_1 / iter_1 / antenna 1 -> left   0
             # SDR_1 / iter_1 / antenna 2 -> right  1
             # |
@@ -181,13 +180,14 @@ class IQdata:
             # SDR_2 / iter_2 / antenna 2 -> right  1
 
             # !(abc) + !a bc + a !b c + ab !c
-            a = metaData['SDR'] - 1
-            b = self.split('/')[-2][-1] -1
-            c = self.split('/')[-1].split('_')[-1][0] - 1
+            a = int(metaData['SDR']) - 1
+            b = int(self.path.split('/')[-2][-1]) -1
+            c = int(self.path.split('/')[-1].split('_')[-1][0]) - 1
             if not(a and b and c) or (not(a) and b and c) or (a and not(b) and c) or (a and b and not(c)):
                 metaData['antenna'] = 'right'
             else:
                 metaData['antenna'] = 'left'
+            
 
 
         metaData['Fs'] = self.Fs
@@ -196,13 +196,14 @@ class IQdata:
         metaData['frameTime'] = self.tindx[frame_nr].tolist()
         metaData['lenFrame'] = self.tindx[frame_nr][1] - self.tindx[frame_nr][0]
         metaData['frameChnl'] = int(self.channelDetection(frame_nr))
+        metaData['rssi'] = self.rssi(frame_nr)
+
         
         t= np.linspace(.01,1,60)
         decoded = self.decode(frame_nr, lpf = np.sin(t)/t)
         metaData['frameDecode'] = decoded[1]
         metaData['bitLen'] = decoded[2].tolist()
         metaData['max_gradient_unwrapped_phase'] = decoded[3].tolist()
-        metaData['rssi'] = self.rssi(frame_nr)
 
         if include_frame:
             metaData['I'] = np.real(self.frameByNumber(frame_nr)).tolist()
