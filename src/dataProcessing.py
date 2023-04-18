@@ -15,7 +15,7 @@ class IQdata:
     2462000000,2464000000,2466000000,2468000000,2470000000,2472000000,
     2474000000,2476000000,2478000000,2402000000,2426000000,2480000000])
 
-    onBoddyMap = {1: ['head','right'],              2: ['head','left'], 
+    onBodyMap = {1: ['head','right'],              2: ['head','left'], 
                   3: ['chest', 'right'],            4: ['chest', 'left'],
                   5: ['fornTorso', 'right'],        6: ['fornTorso', 'left'],
                   7: ['arm', 'right'],              8: ['arm', 'left'],
@@ -163,6 +163,8 @@ class IQdata:
             
         elif metaData['test'] == "onBody":
             metaData['dvc'] = temp[5]
+            metaData['placement'] = self.onBodyMap[int(temp[5])][0]
+            metaData['side'] = self.onBodyMap[int(temp[5])][1]
             metaData['pos'] = temp[7]
             # SDR_1 / iter_1 / antenna 1 -> left   0
             # SDR_1 / iter_1 / antenna 2 -> right  1
