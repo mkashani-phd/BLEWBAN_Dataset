@@ -181,11 +181,13 @@ class IQdata:
             # SDR_2 / iter_2 / antenna 1 -> left   0
             # SDR_2 / iter_2 / antenna 2 -> right  1
 
-            # !(abc) + !a bc + a !b c + ab !c
+            # !(abc) + !a bc + a !b c + ab !c // wrong formula
+            # ~a~bc + ~ab~c + a~b~c + abc
             a = int(metaData['SDR']) - 1
             b = int(self.path.split('/')[-2][-1]) -1
             c = int(self.path.split('/')[-1].split('_')[-1][0]) - 1
-            if not(a and b and c) or (not(a) and b and c) or (a and not(b) and c) or (a and b and not(c)):
+            print(a,b,c,((not a) and (not b) and c) or ( (not a) and b and (not c)) or (a and (not b) and (not c)) or (a and b and c))
+            if ((not a) and (not b) and c) or ( (not a) and b and (not c)) or (a and (not b) and (not c)) or (a and b and c):
                 metaData['antenna'] = 'right'
             else:
                 metaData['antenna'] = 'left'
