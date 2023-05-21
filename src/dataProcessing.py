@@ -345,7 +345,7 @@ class IQdata:
         
         if plot:
     # def decodePlot(phi,xpx,xnx,pIndx,nIndx,bitSmaplePeriod):
-            plt.figure(figsize=(20, 3), dpi=100)
+            plt.figure(figsize=(20, 3), dpi=1000)
             # plt.plot(phi/200)
             plt.plot(np.zeros(len(phi)))
             plt.plot(xpx)
