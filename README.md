@@ -7,4 +7,4 @@ The advantages of this dataset is:
 - off-body recording with the same devices at different orientation
 ## How to access dataset
 Python tools in this rpository provide a user-friendly access to the dataset stored in a **MongoDB database** on the cloud.
-To use this dataset you don't need to download the raw recording files and locally manage them. MongoDB database can easily run queries in multiple languages. Supported languages can be found [here]([url](https://www.mongodb.com/languages)https://www.mongodb.com/languages).
+To use this dataset you don't need to download the raw recording files and locally manage them. MongoDB database can easily run queries in multiple languages. Supported languages can be found [here](https://www.mongodb.com/languages).
