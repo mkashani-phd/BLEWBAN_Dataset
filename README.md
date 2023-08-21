@@ -7,7 +7,7 @@ The advantages of this dataset is:
 - Off-body recording with the same devices at 7-different orientations
   
 ## How to access dataset
-Python tools in this rpository provide a user-friendly access to the dataset stored in a **MongoDB database** on the cloud.
+Python tools in this repository provide a user-friendly access to the dataset stored in a **MongoDB database** on the cloud.
 To use this dataset you don't need to download the raw files (22GB) and locally manage them. MongoDB database can easily run queries in multiple languages even on online platform such as google colab. Supported languages can be found [here](https://www.mongodb.com/languages).
 
 Bellow is an example of how to perform a query and store the results in a Pandas data frame on a google colab. it can also be found in [here](https://colab.research.google.com/drive/1MDBT2rkZK7mvF0-5CpkBp85WYFNymxvO?usp=sharing)!
