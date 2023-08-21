@@ -21,12 +21,11 @@ import pymongo
 import numpy as np
 import pandas as pd
 ```
-### making connection to MongoDB database
+### Making connection to MongoDB database
 To connect to mongoDB database you need a username and a password. 
 
-username: **test**
-
-password: **12345678910111213**
+- username: **test**
+- password: **12345678910111213**
 
 there are two databases available.
 - BLE
