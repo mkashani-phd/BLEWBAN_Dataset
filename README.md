@@ -20,4 +20,9 @@ import pymongo
 import numpy as np
 import pandas as pd
 ```
+```python
+client = pymongo.MongoClient("mongodb://test:12345678910111213@SG-pine-beat-9444-57323.servers.mongodirector.com:27017/BLE_metadata")
+BLE_WBAN = myclient["BLE_metadata"]
+```
+
 
