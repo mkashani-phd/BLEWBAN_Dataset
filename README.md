@@ -12,7 +12,7 @@ To use this dataset you don't need to download the raw files (22GB) and locally 
 
 Bellow is an example of how to perform a query and store the results in a Pandas data frame on a google colab. it can also be found in [here](https://colab.research.google.com/drive/1MDBT2rkZK7mvF0-5CpkBp85WYFNymxvO?usp=sharing)!
 
-### installing requierments
+### Installing requierments
 ```python
 !pip install -q pymongo
 !pip install pandas
@@ -44,7 +44,7 @@ client = pymongo.MongoClient("mongodb://test:12345678910111213@SG-pine-beat-9444
 BLE_WBAN = client["BLE"]
 ```
 
-### quering data 
+### Quering data 
 For example we are trying to filter off-body data recorded at atantenna 2 from device 1 in position 6 with 9dbm TX power.    
 ```python
 filter = {'antenna': '2', 'dvc':'1', 'pos':'1', 'pos': '6', 'txPower': '9dbm'}
