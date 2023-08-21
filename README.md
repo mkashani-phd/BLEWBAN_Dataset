@@ -12,6 +12,7 @@ To use this dataset you don't need to download the raw files (22GB) and locally 
 
 Bellow is an example of how to perform a query and store the results in a Pandas data frame on a google colab. it can also be found in [here](https://colab.research.google.com/drive/1MDBT2rkZK7mvF0-5CpkBp85WYFNymxvO?usp=sharing)!
 
+###installing requierments
 ```python
 !pip install -q pymongo
 !pip install pandas
@@ -20,6 +21,7 @@ import pymongo
 import numpy as np
 import pandas as pd
 ```
+
 ```python
 client = pymongo.MongoClient("mongodb://test:12345678910111213@SG-pine-beat-9444-57323.servers.mongodirector.com:27017/BLE_metadata")
 BLE_WBAN = myclient["BLE_metadata"]
