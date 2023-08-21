@@ -23,17 +23,23 @@ import pandas as pd
 ```
 ### making connection to MongoDB database
 To connect to mongoDB database you need a username and a password. 
+
 username: **test**
+
 password: **12345678910111213**
+
+there are two databases available.
+-
 ```python
 client = pymongo.MongoClient("mongodb://test:12345678910111213@SG-pine-beat-9444-57323.servers.mongodirector.com:27017/BLE_metadata")
 BLE_WBAN = myclient["BLE_metadata"]
 ```
 
 
-### Filtering criteria {'pos':'1', 'dvc':'1', 'pos': '6', 'txPower': '9dbm', 'antenna': '2'}
+### quering data 
+For example we are trying to filter off-body data recorded at atantenna 2 from device 1 in position 6 with 9dbm TX power.    
 ```python
-filter = {'pos':'1', 'dvc':'1', 'pos': '6', 'txPower': '9dbm', 'antenna': '2'}
+filter = {'antenna': '2', 'dvc':'1', 'pos':'1', 'pos': '6', 'txPower': '9dbm'}
 query = list(BLE_WBAN.offBody.find(filter))
 df = pd.DataFrame(query)
 ```
