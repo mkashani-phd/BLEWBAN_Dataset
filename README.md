@@ -12,10 +12,12 @@ To use this dataset you don't need to download the raw files (22GB) and locally 
 
 Bellow is an example of how to perform a query and store the results in a Pandas data frame on a google colab. it can also be found in [here](https://colab.research.google.com/drive/1MDBT2rkZK7mvF0-5CpkBp85WYFNymxvO?usp=sharing)!
 
-`!pip install -q pymongo
+```python
+!pip install -q pymongo
 !pip install pandas
 !pip install numpy
 import pymongo
 import numpy as np
-import pandas as pd`
+import pandas as pd
+```
 
