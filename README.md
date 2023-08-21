@@ -33,7 +33,8 @@ BLE_WBAN = myclient["BLE_metadata"]
 
 ### Filtering criteria {'pos':'1', 'dvc':'1', 'pos': '6', 'txPower': '9dbm', 'antenna': '2'}
 ```python
-query  = pd.DataFrame(list(BLE_WBAN.offBody.find({'pos':'1'})))
-query
+filter = {'pos':'1', 'dvc':'1', 'pos': '6', 'txPower': '9dbm', 'antenna': '2'}
+query = list(BLE_WBAN.offBody.find(filter))
+df = pd.DataFrame(query)
 ```
 
