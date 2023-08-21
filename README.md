@@ -29,7 +29,9 @@ username: **test**
 password: **12345678910111213**
 
 there are two databases available.
--
+- BLE
+- BLE_metadata
+BLE_metadata is the light version of the BLE excluding raw data. It contains most of the basic time and frequency charectristics of the raw data and is much faster. On the other hand, The BLE database has all the metadata along with the raw recordings.
 ```python
 client = pymongo.MongoClient("mongodb://test:12345678910111213@SG-pine-beat-9444-57323.servers.mongodirector.com:27017/BLE_metadata")
 BLE_WBAN = myclient["BLE_metadata"]
