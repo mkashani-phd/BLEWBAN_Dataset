@@ -7,10 +7,8 @@ The advantages of this dataset is:
 - Off-body recording with the same devices at 7-different orientations
   
 ## How to access dataset
-Python tools in this repository provide a user-friendly access to the dataset stored in a **MongoDB database** on the cloud.
-To use this dataset you don't need to download the raw files (22GB) and locally manage them. MongoDB database can easily run queries in multiple languages even on online platform such as google colab. Supported languages can be found [here](https://www.mongodb.com/languages).
-
-Bellow is an example of how to perform a query and store the results in a Pandas data frame on a google colab. it can also be found in [here](https://colab.research.google.com/drive/1MDBT2rkZK7mvF0-5CpkBp85WYFNymxvO?usp=sharing)!
+Python tools in this repository provide a user-friendly access to the dataset stored in a **MongoDB database**.
+To use this dataset you don't need to download the raw files (22GB) and locally manage them. MongoDB database can easily run queries in multiple languages even on online platform such as google colab. Supported languages can be found [here](https://www.mongodb.com/languages). [here](https://colab.research.google.com/drive/1MDBT2rkZK7mvF0-5CpkBp85WYFNymxvO?usp=sharing) is an example of how to perform a query and store the results in a Pandas data frame on a google colab!
 
 ### Installing requierments
 ```python
@@ -58,3 +56,8 @@ the above store a dataframe with columns such as:
 | 1 | 641aa1d333089480e2d0a5cb |   /home/moh/...   |     3    | jan 13 2023 |  1  |  6  |  1  | offBody |   9dbm  |    2    | ... | 2439810000 | 31.5 | [2978115.0, 2987351.0] |  9236.0  |     12    | 0x5553d3d3c4b4f71616de0 | [261, 96, 105, ... | [-0.013399868, 0.0109354282, ... |  [0.00198370, -0.0071718, ...  | [-0.01312295, -0.01129184, ... |
 | 2 | 641aa1d333089480e2d0a5cc |   /home/moh/...   |     8    | jan 13 2023 |  1  |  6  |  1  | offBody |   9dbm  |    2    | ... | 2439810000 | 31.5 | [4478106.0, 4487332.0] |  9226.0  |     21    |  0x5553d3d3c40ce5d128c1 | [256, 96, 105, ... | [-0.013268690, 0.0109537563, ... | [-0.00790429, -0.00302133, ... | [-0.00939970, -0.01232947, ... |
 | 3 | 641aa1d333089480e2d0a5cd |   /home/moh/...   |    10    | jan 13 2023 |  1  |  6  |  1  | offBody |   9dbm  |    2    | ... | 2439810000 | 31.5 | [5978104.0, 5987324.0] |  9220.0  |     30    | 0x5553d3d3c4f4645966200 | [251, 96, 104, ... | [-0.014260522, 0.0117406014, ... | [-0.00427259, -0.01013215, ... | [0.01345866, -0.005706963, ... |
+
+## 
+
+
+
