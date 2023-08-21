@@ -52,5 +52,9 @@ query = list(BLE_WBAN.offBody.find(filter))
 df = pd.DataFrame(query)
 ```
 the above store a dataframe with columns such as:
-|a|v|a|
-|a|A|c|
+| Item              | In Stock | Price |
+| :---------------- | :------: | ----: |
+| Python Hat        |   True   | 23.99 |
+| SQL Hat           |   True   | 23.99 |
+| Codecademy Tee    |  False   | 19.99 |
+| Codecademy Hoodie |  False   | 42.99 |
