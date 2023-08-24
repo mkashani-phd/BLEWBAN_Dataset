@@ -12,7 +12,7 @@ To use this dataset you don't need to download the raw files (22GB) and locally 
 
 An example of how to perform a query and store the results in a Pandas data frame on a Google Colab is available [here](https://colab.research.google.com/drive/1MDBT2rkZK7mvF0-5CpkBp85WYFNymxvO?usp=sharing)!
 
-[image](results.png)
+![](results.png)
 ### Installing requierments
 ```python
 !pip install -q pymongo
