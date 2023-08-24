@@ -1,6 +1,4 @@
 # BLEWBAN_Dataset 
-#### <i class="fa fa-gear fa-spin fa-2x" style="color: firebrick"></i> Configuration
-Configuration can be launched from the **Tools -> Settings** menu option.
 BLEWBAN is a raw RF dataset of Bluetooth Low Energy (BLE) signals focused on Wireless Body Area Netwrok (WBAN). It consists of on-body and off-body recordings usign ESP32s in BLE mode.
 The advantages of this dataset is:
 - It covers the entire bandwith of the BLE technology.(recorded at 2.44GHz at 100MSps)
@@ -10,7 +8,9 @@ The advantages of this dataset is:
   
 ## How to access dataset
 Python tools in this repository provide a user-friendly access to the dataset stored in a **MongoDB database**.
-To use this dataset you don't need to download the raw files (22GB) and locally manage them. MongoDB database can easily run queries in multiple languages even on online platform such as google colab. Supported languages can be found [here](https://www.mongodb.com/languages). [here](https://colab.research.google.com/drive/1MDBT2rkZK7mvF0-5CpkBp85WYFNymxvO?usp=sharing) is an example of how to perform a query and store the results in a Pandas data frame on a google colab!
+To use this dataset you don't need to download the raw files (22GB) and locally manage them. MongoDB database can easily run queries in multiple languages even on online platforms such as Google Colab. Supported languages can be found [here](https://www.mongodb.com/languages). 
+
+An example of how to perform a query and store the results in a Pandas data frame on a Google Colab is available [here](https://colab.research.google.com/drive/1MDBT2rkZK7mvF0-5CpkBp85WYFNymxvO?usp=sharing)!
 
 ### Installing requierments
 ```python
