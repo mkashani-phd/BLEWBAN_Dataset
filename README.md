@@ -1,4 +1,4 @@
-# BLEWBAN_Dataset
+# BLEWBAN_Dataset `r fa_rocket(colour = "#1FA67A")` + `r fa_r_project(colour = "#384CB7")` = `r fa_heart(colour = "red")`
 BLEWBAN is a raw RF dataset of Bluetooth Low Energy (BLE) signals focused on Wireless Body Area Netwrok (WBAN). It consists of on-body and off-body recordings usign ESP32s in BLE mode.
 The advantages of this dataset is:
 - It covers the entire bandwith of the BLE technology.(recorded at 2.44GHz at 100MSps)
