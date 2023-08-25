@@ -23,27 +23,36 @@ import numpy as np
 import pandas as pd
 ```
 ### Making connection to MongoDB database
-To connect to mongoDB database you need a username and a password. 
-
-- username: **test**
-- password: **12345678910111213**
-
-there are two databases available.
+There are two databases available.
 - BLE
 - BLE_metadata
-
-BLE_metadata is the light version of the BLE excluding raw data. It contains basic time and frequency charectristics of the raw data and is much faster. On the other hand, The BLE database include raw recordings along with BLE_metadata.
-
+  
 For BLE_metadata use the following connection string
-```python
-client = pymongo.MongoClient("mongodb://test:12345678910111213@SG-pine-beat-9444-57323.servers.mongodirector.com:27017/BLE_metadata")
-BLE_WBAN = client["BLE_metadata"]
-```
-Or for BLE use the following connection string
 ```python
 client = pymongo.MongoClient("mongodb://test:12345678910111213@SG-pine-beat-9444-57323.servers.mongodirector.com:27017/BLE")
 BLE_WBAN = client["BLE"]
 ```
+
+Or for BLE use the following connection string
+```python
+client = pymongo.MongoClient("mongodb://test:12345678910111213@SG-pine-beat-9444-57323.servers.mongodirector.com:27017/BLE_metadata")
+BLE_WBAN = client["BLE_metadata"]
+```
+
+BLE_metadata is the light version of the BLE excluding raw data. It contains basic time and frequency charectristics of the raw data and is much faster. On the other hand, The BLE database include raw recordings along with BLE_metadata.
+
+The connection String consist of username, password, cloud URL, and the database name.
+
+- username: **test**
+- password: **12345678910111213**
+- url: **SG-pine-beat-9444-57323.servers.mongodirector.com:27017**
+- DB: **BLE** or **BLE_metadata**
+
+
+
+
+
+
 
 ## Quering data 
 For example we are trying to filter off-body data recorded at atantenna 2 from device 1 in position 6 with 9dbm TX power.    
