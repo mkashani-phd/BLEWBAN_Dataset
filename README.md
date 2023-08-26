@@ -14,11 +14,12 @@ An example of how to perform a query and store the results in a Pandas data fram
 
 
 ### Installing requierments
-``` bash
-pip3 install -q pymongo
+``` 
+pip3 install pymongo
 pip3 install pandas
 pip3 install numpy
 ```
+After succesfull installation import dependencies.
 ```python
 import pymongo
 import numpy as np
