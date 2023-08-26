@@ -8,16 +8,18 @@ The advantages of this dataset is:
   
 ## How to access dataset
 Python tools in this repository provide a user-friendly access to the dataset stored in a **MongoDB database**.
-To use this dataset you don't need to download the raw files (22GB) and locally manage them. MongoDB database can easily run queries in multiple languages even on online platforms such as Google Colab. Supported languages can be found [here](https://www.mongodb.com/languages). 
+To use this dataset you don't need to download the raw files (22GB) and locally manage them. MongoDB database can easily run queries in multiple languages even on online platforms such as Google Colab (example [here](https://colab.research.google.com/drive/1MDBT2rkZK7mvF0-5CpkBp85WYFNymxvO?usp=sharing)). Supported languages can be found [here](https://www.mongodb.com/languages). 
 
-An example of how to perform a query and store the results in a Pandas data frame on a Google Colab is available [here](https://colab.research.google.com/drive/1MDBT2rkZK7mvF0-5CpkBp85WYFNymxvO?usp=sharing)!
+An example of how to perform a query and store the results in a Pandas data frame on a Google Colab is available !
 
 
 ### Installing requierments
+``` bash
+pip3 install -q pymongo
+pip3 install pandas
+pip3 install numpy
+```
 ```python
-!pip install -q pymongo
-!pip install pandas
-!pip install numpy
 import pymongo
 import numpy as np
 import pandas as pd
