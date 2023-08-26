@@ -32,13 +32,13 @@ There are two databases available.
   
 BLE_metadata is the light version of the BLE excluding raw data. It contains basic time and frequency charectristics of the raw data and is much faster. On the other hand, The BLE database include raw recordings along with BLE_metadata.
   
-For BLE use the following connection string
+For **BLE** use the following connection string
 ```python
 client = pymongo.MongoClient("mongodb://test:12345678910111213@SG-pine-beat-9444-57323.servers.mongodirector.com:27017/BLE")
 BLE_WBAN = client["BLE"]
 ```
 
-Or for BLE_metadata use the following connection string
+Or for **BLE_metadata** use the following connection string
 ```python
 client = pymongo.MongoClient("mongodb://test:12345678910111213@SG-pine-beat-9444-57323.servers.mongodirector.com:27017/BLE_metadata")
 BLE_WBAN = client["BLE_metadata"]
