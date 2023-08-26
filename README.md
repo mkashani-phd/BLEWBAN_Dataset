@@ -59,7 +59,7 @@ the above store a dataframe with columns such as:
 ## Data interpretaion
 Since storing Complex numbers is not possible in the MongoDB database columns _I_ and _Q_ are real and imaginary numbers respectively. The code below will generate a new column named _frame_ that is $I + j*Q$
 ``` python
-query['frame'] = query.apply(lambda x: x['I'] + np.dot(x['Q'],1j), axis=1)
+df['frame'] = query.apply(lambda x: x['I'] + np.dot(x['Q'],1j), axis=1)
 ```
 
 
