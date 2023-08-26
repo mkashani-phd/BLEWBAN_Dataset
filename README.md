@@ -56,7 +56,14 @@ the above store a dataframe with columns such as:
 | 2 | 641aa1d333089480e2d0a5cc |   /home/moh/...   |     8    | jan 13 2023 |  1  |  6  |  1  | offBody |   9dbm  |    2    | ... | 2439810000 | 31.5 | [4478106.0, 4487332.0] |  9226.0  |     21    |  0x5553d3d3c40ce5d128c1 | [256, 96, 105, ... | [-0.013268690, 0.0109537563, ... | [-0.00790429, -0.00302133, ... | [-0.00939970, -0.01232947, ... |
 | 3 | 641aa1d333089480e2d0a5cd |   /home/moh/...   |    10    | jan 13 2023 |  1  |  6  |  1  | offBody |   9dbm  |    2    | ... | 2439810000 | 31.5 | [5978104.0, 5987324.0] |  9220.0  |     30    | 0x5553d3d3c4f4645966200 | [251, 96, 104, ... | [-0.014260522, 0.0117406014, ... | [-0.00427259, -0.01013215, ... | [0.01345866, -0.005706963, ... |
 
-## 
+## Data interpretaion
+Since storing Complex numbers is not possible in the MongoDB database columns _I_ and _Q_ are real and imaginary numbers respectively. The code below will generate a new column named _frame_ that is $I + j*Q$
+``` python
+query['frame'] = query.apply(lambda x: x['I'] + np.dot(x['Q'],1j), axis=1)
+```
+
+
+
 
 
 
