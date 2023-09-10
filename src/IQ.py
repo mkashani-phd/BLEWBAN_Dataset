@@ -46,29 +46,43 @@ class IQ:
                 print("error: no input")
             else:
                 input = self.df
+        if method is None:
+            print("error: no method")
+            return
+        
+
         if self.isList(input):
             return method(input)
+        
         elif self.isPandaDF(input):
             if isinstance(input, pd.Series):
                 res = input.apply(lambda x: method(x))
+                
             elif plot: # bad way to handle plot but this is a quick fix
-                if title and 'title' in input.columns:  
+                if title:  
                     try:  
                         res = input.apply(lambda x: method(x[col_name],x['title'],x['x_label'],x['y_label']) , axis=1)
                     except:
-                        res = input.apply(lambda x: method(x[col_name],x['title']) , axis=1)
+                        try:
+                            res = input.apply(lambda x: method(x[col_name],x['title']) , axis=1)
+                        except:
+                            if self.Warnings:
+                                print("Warning: input does not contain title or x/y_label columns")
+                            res = input.apply(lambda x: method(x[col_name]) , axis=1)
                 else:
                     res = input.apply(lambda x: method(x[col_name]) , axis=1)
+                return True 
+            
             elif 'frame' in input.columns:
                 res = input.apply(lambda x: method(x['frame']) , axis=1)
             elif 'I' in input.columns and 'Q' in input.columns:
                 res = input.apply(lambda x: method(x['I'] + np.dot(x['Q'],1j)) , axis=1)
             else:  
                 print("error: input does not contain frame or I/Q columns")
-        
+
             if col_name is not None:
-                input[col_name] = res
-                return input
+                self.df[col_name] = res
+                return self.df
             else:
                 return res
 
@@ -115,6 +129,20 @@ class IQ:
     def demodulate(self, frame: np.ndarray | pd.DataFrame = None, col_name = None):
         return self.inputCheck(frame, method=self._demodulate, col_name = col_name)
     
+    def _removeDC(self, input):
+        return input - np.average(input)
+    def removeDC(self, frame: np.ndarray | pd.DataFrame = None, col_name = None):
+        return self.inputCheck(frame, method=self._removeDC, col_name = col_name)
+    
+
+    
+    
+    #Github Copilot wrote this function, not sure if it works!
+    def _findPeaks(self, input): 
+        return np.where(np.diff(np.sign(np.diff(input))))[0] + 1
+    def findPeaks(self, frame: np.ndarray | pd.DataFrame = None, col_name = None):
+        return self.inputCheck(frame, method=self._findPeaks, col_name = col_name)
+    
     def _reconstruct(self, input):
         cos = np.real(input)*np.sin(2*np.pi* self.Fc * np.linspace(1,len(input),len(input))/self.Fs)
         sin = np.imag(input)*np.cos(2*np.pi* self.Fc * np.linspace(1,len(input),len(input))/self.Fs)
@@ -124,17 +152,15 @@ class IQ:
         return self.inputCheck(frame, method=self._reconstruct, col_name = col_name)
     
     def _unwrapPhase(self, input):
-        demod = self.demodulate(input)
-        phase = np.unwrap(np.angle(demod))
+        phase = np.unwrap(np.angle(input))
         return  phase
     def unwrapPhase(self, frame: np.ndarray | pd.DataFrame = None, col_name = None):
         return self.inputCheck(frame, method=self._unwrapPhase, col_name = col_name)
     
-    def _gradientPhase(self, input):
-        phase = self.unwrapPhase(input)
-        return np.gradient(phase)
-    def gradientPhase(self, frame: np.ndarray | pd.DataFrame = None, col_name = None):
-        return self.inputCheck(frame, method=self._gradientPhase, col_name = col_name)
+    def _gradient(self, input):
+        return np.gradient(input)
+    def gradient(self, frame: np.ndarray | pd.DataFrame = None, col_name = None):
+        return self.inputCheck(frame, method=self._gradient, col_name = col_name)
     
     def _sincFilter(self, input):
         t= np.linspace(.01,1,30)  
@@ -148,6 +174,7 @@ class IQ:
         return self.inputCheck(frame, method=filter, col_name = col_name)
     
 
+
     def _plotUtills(self, input, title = None, x_label = None, y_label = None):
         plt.figure(figsize=(20,3))
         plt.plot(input)
@@ -158,6 +185,7 @@ class IQ:
         if y_label is not None:
             plt.ylabel(y_label)
         plt.show()
+
     def _plot(self, input, title = None, x_label = None, y_label = None):
         if isinstance(input, pd.Series):
             for column in input:
