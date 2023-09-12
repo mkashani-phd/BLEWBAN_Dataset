@@ -56,7 +56,10 @@ class IQ:
         
         elif self.isPandaDF(input):
             if isinstance(input, pd.Series):
-                res = input.apply(lambda x: method(x))
+                if plot and title is not None:
+                    res = input.apply(lambda x: method(x,title=title))
+                else:
+                    res = input.apply(lambda x: method(x))
                 
             elif plot: # bad way to handle plot but this is a quick fix
                 if title:  
@@ -152,7 +155,7 @@ class IQ:
         return self.inputCheck(frame, method=self._reconstruct, col_name = col_name)
     
     def _unwrapPhase(self, input):
-        phase = np.unwrap(np.angle(input))
+        phase = np.unwrap(input)
         return  phase
     def unwrapPhase(self, frame: np.ndarray | pd.DataFrame = None, col_name = None):
         return self.inputCheck(frame, method=self._unwrapPhase, col_name = col_name)
@@ -195,6 +198,21 @@ class IQ:
         
     def plot(self, frame: np.ndarray | pd.Series | pd.DataFrame = None, col_names: str | list  = None, title: bool = False):
         self.inputCheck(frame, method=self._plot, col_name = col_names, title = title, plot = True)  
+
+
+    def _apply(self, input, method, col_name = None):
+        return self.inputCheck(input = input, method = method, col_name = col_name, plot = method.__name__ == 'plot')
+    
+    def apply(self, methods: list, frame: np.ndarray | pd.Series | pd.DataFrame = None, col_names: str | list  = None):
+        while len(methods) > 0:
+            method_nm = methods.pop()
+            if isinstance(method_nm, str):
+                method = self.__getattribute__(method_nm)
+            else:
+                method = method_nm
+            frame = self._apply(frame, method= method, col_name = col_names)
+
+        return frame
 
     
     
