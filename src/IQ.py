@@ -40,7 +40,7 @@ class IQ:
     def isPandaDF(self, input):
         return isinstance(input, pd.DataFrame) or isinstance(input, pd.Series)
     
-    def inputCheck(self, input, method = None, col_name = None, title = None, plot = False):
+    def inputCheck(self, input, method = None, col_name = None, args = None, plot = False):
         if input is None:
             if self.df is None:
                 print("error: no input")
@@ -56,28 +56,31 @@ class IQ:
         
         elif self.isPandaDF(input):
             if isinstance(input, pd.Series):
-                if plot and title is not None:
-                    res = input.apply(lambda x: method(x,title=title))
+                if args is not None:
+                    res = input.apply(lambda x: method(x,**args))
                 else:
                     res = input.apply(lambda x: method(x))
                 
-            elif plot: # bad way to handle plot but this is a quick fix
-                if title:  
-                    try:  
-                        res = input.apply(lambda x: method(x[col_name],x['title'],x['x_label'],x['y_label']) , axis=1)
+            elif plot: # bad way to handle plot but this is a quick fix 
+                try:  
+                    res = input.apply(lambda x: method(x[col_name],x['title'],x['x_label'],x['y_label']) , axis=1)
+                except:
+                    print("Warning: No x/y_label columns")
+                    try:
+                        res = input.apply(lambda x: method(x[col_name],x['title']) , axis=1)
                     except:
-                        try:
-                            res = input.apply(lambda x: method(x[col_name],x['title']) , axis=1)
-                        except:
-                            if self.Warnings:
-                                print("Warning: input does not contain title or x/y_label columns")
-                            res = input.apply(lambda x: method(x[col_name]) , axis=1)
-                else:
-                    res = input.apply(lambda x: method(x[col_name]) , axis=1)
+                        if self.Warnings:
+                            print("Warning: Np title columns")
+                        res = input.apply(lambda x: method(x[col_name],**args) , axis=1)
+
                 return True 
             
             elif 'frame' in input.columns:
-                res = input.apply(lambda x: method(x['frame']) , axis=1)
+                if args is not None:
+                    print("args",args)
+                    res = input.apply(lambda x: method(x['frame'],**args) , axis=1)
+                else:
+                    res = input.apply(lambda x: method(x['frame']) , axis=1)
             elif 'I' in input.columns and 'Q' in input.columns:
                 res = input.apply(lambda x: method(x['I'] + np.dot(x['Q'],1j)) , axis=1)
             else:  
@@ -165,18 +168,31 @@ class IQ:
     def gradient(self, frame: np.ndarray | pd.DataFrame = None, col_name = None):
         return self.inputCheck(frame, method=self._gradient, col_name = col_name)
     
-    def _sincFilter(self, input):
-        t= np.linspace(.01,1,30)  
-        lpf = np.sin(t)/t
+    def _sincFilter(self, input, length = 30):
+        t= np.linspace(-1,1,length)  
+        lpf = np.sinc(t)
         return np.convolve(input,lpf)
-    def filter(self, frame: np.ndarray | pd.Series = None, filter = None, col_name = None):
+    
+    def filter(self, frame: np.ndarray | pd.Series = None, filter = None, col_name = None, length = None):
         if filter is None:
             filter = self._sincFilter
             if self.Warnings:
                 print("Warning: No filter specified, using sinc filter")
-        return self.inputCheck(frame, method=filter, col_name = col_name)
+        if length is None:
+            length = 30
+            if self.Warnings:
+                print("Warning: No filter length specified, using default length of 30")
+        return self.inputCheck(frame, method=filter, col_name = col_name, args={"length": length})
     
-
+    def _downSample(self, input, downSampleRate =2):
+        return input[:: downSampleRate]
+    def downSample(self, frame: np.ndarray | pd.DataFrame = None, downSampleRate = 2, col_name = None):
+        return self.inputCheck(frame, method=self._downSample, col_name = col_name, args = {"downSampleRate": downSampleRate})
+    
+    def _upSample(self, input, upSampleRate =2):
+        return np.repeat(input, upSampleRate)
+    def upSample(self, frame: np.ndarray | pd.DataFrame = None, upSampleRate = 2, col_name = None):
+        return self.inputCheck(frame, method=self._upSample, col_name = col_name, args = {"upSampleRate": upSampleRate})
 
     def _plotUtills(self, input, title = None, x_label = None, y_label = None):
         plt.figure(figsize=(20,3))
@@ -192,31 +208,59 @@ class IQ:
     def _plot(self, input, title = None, x_label = None, y_label = None):
         if isinstance(input, pd.Series):
             for column in input:
-                self._plotUtills(input=column, title = title, x_label = x_label, y_label = y_label)
+                try:
+                    self._plotUtills(input=column, title = title[column], x_label = x_label[column], y_label = y_label[column])
+                except:
+                    self._plotUtills(input=column, title = title, x_label = x_label, y_label = y_label)
         else:
             self._plotUtills(input=input, title = title, x_label = x_label, y_label = y_label)
         
-    def plot(self, frame: np.ndarray | pd.Series | pd.DataFrame = None, col_names: str | list  = None, title: bool = False):
-        self.inputCheck(frame, method=self._plot, col_name = col_names, title = title, plot = True)  
+    def plot(self, frame: np.ndarray | pd.Series | pd.DataFrame = None, col_name: str | list  = None, title: str = None, x_label: str = None, y_label: str = None):
+        args={'title': title, 'x_label': x_label, 'y_label': y_label}
+        self.inputCheck(frame, method=self._plot, col_name = col_name,  args= args, plot = True)  
 
 
-    def _apply(self, input, method, col_name = None):
-        return self.inputCheck(input = input, method = method, col_name = col_name, plot = method.__name__ == 'plot')
+    # def _apply(self,  method, input = None,col_name = None,args = None):
+    #     print(args)
+    #     if args is not None:
+    #         return method(input, col_name, **args)
+    #     else:
+    #         return method(input, col_name)
+
     
-    def apply(self, methods: list, frame: np.ndarray | pd.Series | pd.DataFrame = None, col_names: str | list  = None):
-        while len(methods) > 0:
-            method_nm = methods.pop()
-            if isinstance(method_nm, str):
-                method = self.__getattribute__(method_nm)
-            else:
-                method = method_nm
-            frame = self._apply(frame, method= method, col_name = col_names)
+    def apply(self, methods: list| dict, frame: np.ndarray | pd.Series | pd.DataFrame = None, col_name: str | list  = None):
+        if isinstance(methods, dict):
+            method_keys = list(methods.keys())
+            while len(method_keys) > 0:
+                method_nm = method_keys.pop()
+                if isinstance(method_nm, str):
+                    method = self.__getattribute__(method_nm)
+                else:
+                    method = method_nm
+                if methods[method_nm] is not None: # if args is not None
+                    try:
+                        frame = method(frame = frame, col_name = col_name, **methods[method_nm])
+                    except:
+                        if self.Warnings:
+                            print("Warning: args not applied")
+                        frame = method(frame = frame, col_name = col_name)
+                else:
+                    frame = method(frame = frame, col_name = col_name)
+                
+        elif isinstance(methods, list):
+            while len(methods) > 0:
+                method_nm = methods.pop()
+                if isinstance(method_nm, str):
+                    method = self.__getattribute__(method_nm)
+                else:
+                    method = method_nm
+                frame = method(frame = frame, col_name = col_name)
 
         return frame
 
     
     
-    
+
     
 
         
