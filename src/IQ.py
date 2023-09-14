@@ -108,6 +108,11 @@ class IQ:
     def fft(self,frame: np.ndarray | pd.DataFrame = None, col_name = None):
         return self.inputCheck(frame,method = self._fft, col_name = col_name)
     
+    def _shift(self, input, shift = 0):
+        return input * np.exp(2j*np.pi*shift*np.linspace(0,len(input),len(input))/len(input))
+    def shift(self, frame: np.ndarray | pd.DataFrame = None, shift = 0, col_name = None):
+        return self.inputCheck(frame, method=self._shift, col_name = col_name, args = {"shift": shift})
+    
     def _rssi(self,input):
         input = input[100:-100]
         return 10*np.log(np.average(np.sqrt(np.imag(input)**2 + np.real(input)**2)))
@@ -237,6 +242,11 @@ class IQ:
                     method = self.__getattribute__(method_nm)
                 else:
                     method = method_nm
+
+                if not method.__qualname__.startswith('IQ.'): #User defined function
+                    frame = self.inputCheck(frame, method=method, col_name = col_name, args = methods[method_nm])
+                    continue
+            
                 if methods[method_nm] is not None: # if args is not None
                     try:
                         frame = method(frame = frame, col_name = col_name, **methods[method_nm])
@@ -252,6 +262,9 @@ class IQ:
                 method_nm = methods.pop()
                 if isinstance(method_nm, str):
                     method = self.__getattribute__(method_nm)
+                elif not method.__qualname__.startswith('IQ.'): #User defined function
+                    frame = self.inputCheck(frame, method=method, col_name = col_name, args = methods[method_nm])
+                    continue
                 else:
                     method = method_nm
                 frame = method(frame = frame, col_name = col_name)
