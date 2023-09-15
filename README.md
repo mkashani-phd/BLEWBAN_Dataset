@@ -6,7 +6,7 @@ The advantages of this dataset is:
 - On-body recording on 12 different locations including: both left and right head, arm, wrist, chest, front and back torso (waist).  
 - Off-body recording with the same devices at 7-different orientations
 
-There is ongoing research on analyzing the on-body data. The plot bellow shows the classification results of 12 on-Body devices in moving and static body positions.
+There is ongoing research on analyzing the on-body data. The plot bellow shows the classification results of **12 on-Body** devices in moving and static body positions.
 
 ![img](src/img/results.png)
   
