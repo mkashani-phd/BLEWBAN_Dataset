@@ -65,7 +65,7 @@ class IQ:
                 
             elif plot: # bad way to handle plot but this is a quick fix 
                 try:  
-                    res = input.apply(lambda x: method(x[col_name],x['title'],x['x_label'],x['y_label']) , axis=1)
+                    res = input.apply(lambda x: method(x[col_name],x['title'],x['x_label'],x['y_label'], x['x']) , axis=1)
                 except:
                     print("Warning: No x/y_label columns")
                     try:
@@ -201,9 +201,17 @@ class IQ:
     def upSample(self, frame: np.ndarray | pd.DataFrame = None, upSampleRate = 2, col_name = None):
         return self.inputCheck(frame, method=self._upSample, col_name = col_name, args = {"upSampleRate": upSampleRate})
 
-    def _plotUtills(self, input, title = None, x_label = None, y_label = None):
+    def _plotUtills(self, input, title = None, x_label = None, y_label = None,x = None, xscale = None):
         plt.figure(figsize=self.figsize,dpi=self.dpi)
-        plt.plot(input)
+
+        if x is not None:
+            plt.plot(np.linspace(x[0],x[1], len(input)),input)
+        else:
+            plt.plot(input)
+
+        if xscale is not None:
+            plt.xscale('symlog', linthreshx=xscale)
+
         if title is not None:
             plt.title(title)
         if x_label is not None:
@@ -212,18 +220,15 @@ class IQ:
             plt.ylabel(y_label)
         plt.show()
 
-    def _plot(self, input, title = None, x_label = None, y_label = None):
+    def _plot(self, input, title = None, x_label = None, y_label = None, x = None, xscale = None):
         if isinstance(input, pd.Series):
             for column in input:
-                try:
-                    self._plotUtills(input=column, title = title[column], x_label = x_label[column], y_label = y_label[column])
-                except:
-                    self._plotUtills(input=column, title = title, x_label = x_label, y_label = y_label)
+                self._plotUtills(input=column, title = title, x_label = x_label, y_label = y_label, x = x,  xscale = xscale)
         else:
-            self._plotUtills(input=input, title = title, x_label = x_label, y_label = y_label)
+            self._plotUtills(input=input, title = title, x_label = x_label, y_label = y_label, x = x,  xscale = xscale)
         
-    def plot(self, frame: np.ndarray | pd.Series | pd.DataFrame = None, col_name: str | list  = None, title: str = None, x_label: str = None, y_label: str = None):
-        args={'title': title, 'x_label': x_label, 'y_label': y_label}
+    def plot(self, frame: np.ndarray | pd.Series | pd.DataFrame = None, col_name: str | list  = None, title: str  = None, x_label : str  = None, y_label: str = None, x: np.ndarray = None, xscale = None):
+        args={'title': title, 'x_label': x_label, 'y_label': y_label, 'x': x , 'xscale': xscale}
         self.inputCheck(frame, method=self._plot, col_name = col_name,  args= args, plot = True)  
 
 
@@ -244,7 +249,11 @@ class IQ:
                     method = self.__getattribute__(method_nm)
                 else:
                     method = method_nm
-
+                try:
+                    method.__qualname__.startswith('IQ.')
+                except:
+                    frame = self.inputCheck(frame, method=method, col_name = col_name, args = methods[method_nm])
+                    continue
                 if not method.__qualname__.startswith('IQ.'): #User defined function
                     frame = self.inputCheck(frame, method=method, col_name = col_name, args = methods[method_nm])
                     continue
@@ -267,6 +276,11 @@ class IQ:
                 else:
                     method = method_nm
 
+                try:
+                    method.__qualname__.startswith('IQ.')
+                except:
+                    frame = self.inputCheck(frame, method=method, col_name = col_name)
+                    continue
                 if not method.__qualname__.startswith('IQ.'): #User defined function
                     frame = self.inputCheck(frame, method=method, col_name = col_name)
                     continue
