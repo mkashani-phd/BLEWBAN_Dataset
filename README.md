@@ -7,7 +7,7 @@ The advantages of this dataset is:
 - Off-body recording with the same devices at 7-different orientations
 
 There is ongoing research on analyzing the on-body data. The plot bellow shows the classification results of 12 on-Body devices in moving and static body positions.
-[img](src/img/results.png)
+![img](src/img/results.png)
   
 ## How to access dataset
 Python tools in this repository provide a user-friendly access to the dataset stored in a **MongoDB database**.
