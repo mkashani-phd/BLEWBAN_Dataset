@@ -9,6 +9,8 @@ class IQ:
     Warnings = True
     Fc = 2.44e9
     Fs = 100e6
+    figsize = (20,3)
+    dpi = 100
     df = None
     BLEChnls = np.array([2404000000,2406000000,2408000000,2410000000,
     2412000000,2414000000,2416000000,2418000000,2420000000,2422000000,
@@ -174,7 +176,7 @@ class IQ:
         return self.inputCheck(frame, method=self._gradient, col_name = col_name)
     
     def _sincFilter(self, input, length = 30):
-        t= np.linspace(-1,1,length)  
+        t= np.linspace(.1,1,length)  
         lpf = np.sinc(t)
         return np.convolve(input,lpf)
     
@@ -200,7 +202,7 @@ class IQ:
         return self.inputCheck(frame, method=self._upSample, col_name = col_name, args = {"upSampleRate": upSampleRate})
 
     def _plotUtills(self, input, title = None, x_label = None, y_label = None):
-        plt.figure(figsize=(20,3))
+        plt.figure(figsize=self.figsize,dpi=self.dpi)
         plt.plot(input)
         if title is not None:
             plt.title(title)
@@ -262,11 +264,12 @@ class IQ:
                 method_nm = methods.pop()
                 if isinstance(method_nm, str):
                     method = self.__getattribute__(method_nm)
-                elif not method.__qualname__.startswith('IQ.'): #User defined function
-                    frame = self.inputCheck(frame, method=method, col_name = col_name, args = methods[method_nm])
-                    continue
                 else:
                     method = method_nm
+
+                if not method.__qualname__.startswith('IQ.'): #User defined function
+                    frame = self.inputCheck(frame, method=method, col_name = col_name)
+                    continue
                 frame = method(frame = frame, col_name = col_name)
 
         return frame
