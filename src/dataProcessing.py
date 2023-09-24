@@ -478,6 +478,15 @@ class Utills:
 
 
             
+
+# # test for the raw sample processing
+# import src.dataProcessing as dataproccessing
+# utills = dataproccessing.Utills()                
+# chnl2 = "/home/moh/Documents/PhD/old/BLE_Dataset_Tool/DataSet/SDR_1/onBody/iter_1/x310-jan-14-HighPower-dvc-2-pos-moving_2440000000.0_100000000.0_31.5_2_1_1.iq"
+# IQdatas1,tindx1 = utills.readFile(chnl2,Fc=2440000000.0 - 185000)
+
+# utills.plotter(IQdata=IQdatas1,tindx=tindx1,batch=10,frameShowLimit=10,compression_ratio=15)
+# IQdatas1.getMetaData(3)
         
         
 
