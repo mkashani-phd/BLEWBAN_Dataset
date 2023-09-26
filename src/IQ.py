@@ -4,6 +4,10 @@ import pandas as pd
 import itertools
 from itertools import groupby
 from operator import itemgetter
+import scipy
+
+from itertools import groupby
+from operator import itemgetter
 
 class IQ:
     Warnings = True
@@ -175,21 +179,31 @@ class IQ:
     def gradient(self, frame: np.ndarray | pd.DataFrame = None, col_name = None):
         return self.inputCheck(frame, method=self._gradient, col_name = col_name)
     
-    def _sincFilter(self, input, length = 30):
+    def _sinc(self, input, length = 30):
         t= np.linspace(.1,1,length)  
         lpf = np.sinc(t)
         return np.convolve(input,lpf)
     
-    def filter(self, frame: np.ndarray | pd.Series = None, filter = None, col_name = None, length = None):
-        if filter is None:
-            filter = self._sincFilter
-            if self.Warnings:
-                print("Warning: No filter specified, using sinc filter")
+    def sinc(self, frame: np.ndarray | pd.Series = None, col_name = None, length = None):
         if length is None:
             length = 30
             if self.Warnings:
                 print("Warning: No filter length specified, using default length of 30")
-        return self.inputCheck(frame, method=filter, col_name = col_name, args={"length": length})
+        return self.inputCheck(frame, method=self._sinc, col_name = col_name, args={"length": length})
+    
+    def _butter(self,input,cutoff=1e6, Fs = Fs):
+        fltr = scipy.signal.butter(30, cutoff, 'low', analog=False, output='sos',fs=Fs)
+        return scipy.signal.sosfilt(fltr, input) 
+    def butter(self, frame: np.ndarray | pd.Series = None, col_name = None, cutoff = None, Fs = None):
+        if cutoff is None:
+            cutoff = 1e6
+            if self.Warnings:
+                print("Warning: No filter cutoff specified, using default cutoff of 1MHz")
+        if Fs is None:
+            Fs = self.Fs
+            if self.Warnings:
+                print("Warning: No filter sampling frequency specified, using default Fs of 100Msps")
+        return self.inputCheck(frame, method=self._butter, col_name = col_name, args={"cutoff": cutoff, "Fs": Fs})
     
     def _downSample(self, input, downSampleRate =2):
         return input[:: downSampleRate]
@@ -200,6 +214,68 @@ class IQ:
         return np.repeat(input, upSampleRate)
     def upSample(self, frame: np.ndarray | pd.DataFrame = None, upSampleRate = 2, col_name = None):
         return self.inputCheck(frame, method=self._upSample, col_name = col_name, args = {"upSampleRate": upSampleRate})
+    
+
+
+
+    def keepPositive(self, samples):
+        sam = samples.copy()
+        sam[sam<0] = 0
+        return sam
+    def keepNegative(self, samples):
+        sam = samples.copy()
+        sam[sam>0] = 0
+        return sam
+
+    def nonZeroGrouper(self, samples,farmeBiggerThan = 82, frameSmallerThan = 1000 ,Fs = 100e6):
+        test_list = np.nonzero(samples)
+        framesIndex = []
+        for k, g in groupby(enumerate(test_list[0]), lambda ix: ix[0]-ix[1]):
+            temp = list(map(itemgetter(1), g))
+            if len(temp)< farmeBiggerThan*Fs/100e6 or len(temp)> frameSmallerThan*Fs/100e6:
+                continue
+            if temp[0] > Fs/100e3: # no bits befor 1000 samples at 100e6 sample rate
+                framesIndex.append([temp[0],temp[-1]])
+        return np.array(framesIndex)
+
+
+
+    def _bitFinder(self, sample, Fs= 100e6):
+        X_positive = self.keepPositive(sample)
+        X_negative = self.keepNegative(sample)
+        pIndx = self.nonZeroGrouper(X_positive, Fs=Fs)
+        nIndx = self.nonZeroGrouper(X_negative, Fs=Fs)
+        pIndx = [{'bit': sample[x[0]:x[1]], 'indxBegining': x[0], 'indxEnd': x[0],'len': x[1] - x[0], 'slope':'positive'} for x in pIndx]
+        nIndx = [{'bit': sample[x[0]:x[1]], 'indxBegining': x[0], 'indxEnd': x[0], 'len': x[1] - x[0], 'slope':'negative'} for x in nIndx]
+        return sorted(pIndx + nIndx, key=lambda x: x["indxBegining"])
+    
+    def bitFinder(self, frame: np.ndarray | pd.Series = None, col_name = None, Fs = None):
+        if Fs is None:
+            Fs = self.Fs
+            if self.Warnings:
+                print("IMPORTANT Warning: No sampling frequency specified, using default Fs of 100Msps.")
+        return self.inputCheck(frame, method=self._bitFinder, col_name = col_name, args = {"Fs": Fs})
+
+    def bitPlotter(self, frame,Fs = 100e6, title = '', xlabel = 'Samples', ylabel = 'Freq. around Fc'):
+        plt.figure(figsize=(20,3), dpi=100)
+
+        X_positive = self.keepPositive(frame)
+        X_negative = self.keepNegative(frame)
+        plt.plot(np.zeros(max(len(X_positive),len(X_negative))))
+        plt.plot(X_positive)
+        plt.plot(X_negative)
+
+        pIndx = self.nonZeroGrouper(X_positive, Fs=Fs)
+        nIndx = self.nonZeroGrouper(X_negative, Fs=Fs)
+        plt.stem(pIndx.flatten(), [.3*np.max(X_positive)]*len(pIndx.flatten()) ,'r')
+        plt.stem(nIndx.flatten(), [.3*np.min(X_negative)]*len(nIndx.flatten()))
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.show()
+        plt.close()
+
+    
 
     def _plotUtills(self, input, title = None, x_label = None, y_label = None,x = None, xscale = None):
         plt.figure(figsize=self.figsize,dpi=self.dpi)
@@ -288,8 +364,7 @@ class IQ:
 
         return frame
 
-    
-    
+
 
     
 
