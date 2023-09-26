@@ -83,7 +83,6 @@ class IQ:
             
             elif 'frame' in input.columns:
                 if args is not None:
-                    print("args",args)
                     res = input.apply(lambda x: method(x['frame'],**args) , axis=1)
                 else:
                     res = input.apply(lambda x: method(x['frame']) , axis=1)
@@ -125,26 +124,36 @@ class IQ:
     def rssi(self, frame: np.ndarray | pd.DataFrame = None, col_name = None):
         return self.inputCheck(frame, method=self._rssi, col_name = col_name)
 
-    def _channelDetection(self, input):
+    def _channelDetection(self, input, Fs = Fs):
         fft = self.fft(input)
         absfft = np.abs(fft)
         n0 = np.where(absfft == np.max(absfft))[0][0] 
-        f= np.arange(-self.Fs/2,self.Fs/2,self.Fs/len(absfft))
+        f= np.arange(-self.Fs/2,Fs/2,Fs/len(absfft))
         c0 = f[n0] + self.Fc
         try:
             return np.where(abs(self.BLEChnls-c0) <1e6)[0][0]
         except:
             return -1  
-    def channelDetection(self, frame: np.ndarray | pd.DataFrame = None, col_name = None):
-        return self.inputCheck(frame, method=self._channelDetection, col_name = col_name)
+        
+    def channelDetection(self, frame: np.ndarray | pd.DataFrame = None, col_name = None, Fs = None):
+        if Fs is None:
+            Fs = self.Fs
+            if self.Warnings:
+                print("Warning: (channelDetection) No sampling frequency specified, using default Fs of {}Msps.".format(Fs/1e6))
+        return self.inputCheck(frame, method=self._channelDetection, col_name = col_name, args = {"Fs": Fs})
 
-    def _demodulate(self, input):
-        chnl = self.channelDetection(input)
+    def _demodulate(self, input, Fs = None):
+        chnl = self._channelDetection(input, Fs = Fs)
         Fc = self.BLEChnls[chnl]
-        diffFc = (self.Fc - Fc) / (self.Fs/len(input))
+        diffFc = (self.Fc - Fc) / (Fs/len(input))
         return input * np.exp(2j*np.pi*diffFc*np.linspace(0,len(input),len(input))/len(input))
-    def demodulate(self, frame: np.ndarray | pd.DataFrame = None, col_name = None):
-        return self.inputCheck(frame, method=self._demodulate, col_name = col_name)
+    
+    def demodulate(self, frame: np.ndarray | pd.DataFrame = None, col_name = None, Fs = None):
+        if Fs is None:
+            Fs = self.Fs
+            if self.Warnings:
+                print("Warning: (demodulate) No sampling frequency specified, using default Fs of {}Msps.".format(Fs/1e6))
+        return self.inputCheck(frame, method=self._demodulate, col_name = col_name, args = {"Fs": Fs})
     
     def _removeDC(self, input):
         return input - np.average(input)
@@ -188,7 +197,7 @@ class IQ:
         if length is None:
             length = 30
             if self.Warnings:
-                print("Warning: No filter length specified, using default length of 30")
+                print("Warning: (sinc) No filter length specified, using default length of {}".format(length))
         return self.inputCheck(frame, method=self._sinc, col_name = col_name, args={"length": length})
     
     def _butter(self,input,cutoff=1e6, Fs = Fs):
@@ -198,11 +207,11 @@ class IQ:
         if cutoff is None:
             cutoff = 1e6
             if self.Warnings:
-                print("Warning: No filter cutoff specified, using default cutoff of 1MHz")
+                print("Warning: (butter) No filter cutoff specified, using default cutoff of {}MHz".format(cutoff/1e6))
         if Fs is None:
             Fs = self.Fs
             if self.Warnings:
-                print("Warning: No filter sampling frequency specified, using default Fs of 100Msps")
+                print("Warning: (butter) No filter sampling frequency specified, using default Fs of {}Msps".format(Fs/1e6))
         return self.inputCheck(frame, method=self._butter, col_name = col_name, args={"cutoff": cutoff, "Fs": Fs})
     
     def _downSample(self, input, downSampleRate =2):
@@ -217,7 +226,6 @@ class IQ:
     
 
 
-
     def keepPositive(self, samples):
         sam = samples.copy()
         sam[sam<0] = 0
@@ -227,54 +235,72 @@ class IQ:
         sam[sam>0] = 0
         return sam
 
-    def nonZeroGrouper(self, samples,farmeBiggerThan = 82, frameSmallerThan = 1000 ,Fs = 100e6):
+    def nonZeroGrouper(self, samples,biggerThan = None, smallerThan = None ,Fs = Fs, noGroupBefore = None):
+        if smallerThan is None:
+            smallerThan = 1000*Fs/self.Fs
+        if biggerThan is None:
+            biggerThan = 82*Fs/self.Fs
+        if noGroupBefore is None:
+            noGroupBefore = 1100*Fs/self.Fs
+            if self.Warnings:
+                print("Warning: (nonZeroGrouper) No noGroupBefore specified, using default noGroupBefore of {}".format(noGroupBefore) )
+
         test_list = np.nonzero(samples)
         framesIndex = []
         for k, g in groupby(enumerate(test_list[0]), lambda ix: ix[0]-ix[1]):
             temp = list(map(itemgetter(1), g))
-            if len(temp)< farmeBiggerThan*Fs/100e6 or len(temp)> frameSmallerThan*Fs/100e6:
+            if len(temp)< biggerThan or len(temp)> smallerThan:
                 continue
-            if temp[0] > Fs/100e3: # no bits befor 1000 samples at 100e6 sample rate
+            if temp[0] > noGroupBefore: # no bits befor 1100 samples at 100e6 sample rate
                 framesIndex.append([temp[0],temp[-1]])
         return np.array(framesIndex)
 
 
-
-    def _bitFinder(self, sample, Fs= 100e6):
+    # the default values are for 100Msps
+    def _bitFinderFromPhaseGradient(self, sample, Fs= Fs, bitsPerSample = None, biggerThan = None, smallerThan = None , noGroupBefore = None, plot = False, col_name = None, title = None, x_label = None, y_label = None):
+        if bitsPerSample is None:
+            bitsPerSample = 100*Fs/self.Fs
+            if self.Warnings:
+                print("Warning: (bitFinderFromPhaseGradient) No bits per sample specified, using default bitsPerSample of {}".format(bitsPerSample) )
+        if biggerThan is None:
+            biggerThan = 82*Fs/self.Fs
+            if self.Warnings:
+                print("Warning: (bitFinderFromPhaseGradient) No frame bigger than specified, using default biggerThan of {}".format(biggerThan) )
+        if smallerThan is None:
+            smallerThan = 1000*Fs/self.Fs
+            if self.Warnings:
+                print("Warning: (bitFinderFromPhaseGradient) No frame smaller than specified, using default smallerThan of {}".format(smallerThan) )
+        
+        print(bitsPerSample, smallerThan, biggerThan)
         X_positive = self.keepPositive(sample)
         X_negative = self.keepNegative(sample)
-        pIndx = self.nonZeroGrouper(X_positive, Fs=Fs)
-        nIndx = self.nonZeroGrouper(X_negative, Fs=Fs)
-        pIndx = [{'bit': sample[x[0]:x[1]], 'indxBegining': x[0], 'indxEnd': x[0],'len': x[1] - x[0], 'slope':'positive'} for x in pIndx]
-        nIndx = [{'bit': sample[x[0]:x[1]], 'indxBegining': x[0], 'indxEnd': x[0], 'len': x[1] - x[0], 'slope':'negative'} for x in nIndx]
-        return sorted(pIndx + nIndx, key=lambda x: x["indxBegining"])
+        pIndx = self.nonZeroGrouper(X_positive, Fs=Fs, biggerThan = biggerThan, smallerThan = smallerThan, noGroupBefore = noGroupBefore)
+        nIndx = self.nonZeroGrouper(X_negative, Fs=Fs, biggerThan = biggerThan, smallerThan = smallerThan, noGroupBefore = noGroupBefore)
+        pIndx_meta = [{'samples': sample[x[0]:x[1]], 'numberOfBits':(x[1] - x[0])/bitsPerSample, 'indxBegining': x[0], 'indxEnd': x[1], 'len': x[1] - x[0], 'slope':'positive'} for x in pIndx]
+        nIndx_meta = [{'samples': sample[x[0]:x[1]], 'numberOfBits':(x[1] - x[0])/bitsPerSample,'indxBegining': x[0], 'indxEnd': x[1], 'len': x[1] - x[0], 'slope':'negative'} for x in nIndx]
     
-    def bitFinder(self, frame: np.ndarray | pd.Series = None, col_name = None, Fs = None):
+        if plot:
+            plt.figure(figsize=(20,3), dpi=100)
+            plt.plot(np.zeros(max(len(X_positive),len(X_negative))))
+            plt.plot(X_positive)
+            plt.plot(X_negative)
+            plt.stem(pIndx.flatten(), [.3*np.max(X_positive)]*len(pIndx.flatten()) ,'r')
+            plt.stem(nIndx.flatten(), [.3*np.min(X_negative)]*len(nIndx.flatten()))
+            plt.title(title)
+            plt.xlabel(x_label if x_label is not None else 'Samples')
+            plt.ylabel(y_label if y_label is not None else 'Freq. around Fc')
+            plt.show()
+            plt.close()
+        return sorted(pIndx_meta + nIndx_meta, key=lambda x: x["indxBegining"])
+    
+    def bitFinderFromPhaseGradient(self, frame: np.ndarray | pd.Series = None, col_name = None, Fs = None, bitsPerSample = None, biggerThan = None, smallerThan = None, noGroupBefore = None,plot = False, title = None, x_label = None, y_label = None):
         if Fs is None:
             Fs = self.Fs
             if self.Warnings:
-                print("IMPORTANT Warning: No sampling frequency specified, using default Fs of 100Msps.")
-        return self.inputCheck(frame, method=self._bitFinder, col_name = col_name, args = {"Fs": Fs})
+                print("IMPORTANT WARNING: (bitFinderFromPhaseGradient) No sampling frequency specified, using default Fs of {}Msps.".format(Fs/1e6))
+        return self.inputCheck(frame, method=self._bitFinderFromPhaseGradient, col_name = col_name, args = {"Fs": Fs, "bitsPerSample": bitsPerSample, "noGroupBefore":noGroupBefore,  "biggerThan": biggerThan, "smallerThan": smallerThan, "plot": plot, "title": title, "x_label": x_label, "y_label": y_label})
 
-    def bitPlotter(self, frame,Fs = 100e6, title = '', xlabel = 'Samples', ylabel = 'Freq. around Fc'):
-        plt.figure(figsize=(20,3), dpi=100)
-
-        X_positive = self.keepPositive(frame)
-        X_negative = self.keepNegative(frame)
-        plt.plot(np.zeros(max(len(X_positive),len(X_negative))))
-        plt.plot(X_positive)
-        plt.plot(X_negative)
-
-        pIndx = self.nonZeroGrouper(X_positive, Fs=Fs)
-        nIndx = self.nonZeroGrouper(X_negative, Fs=Fs)
-        plt.stem(pIndx.flatten(), [.3*np.max(X_positive)]*len(pIndx.flatten()) ,'r')
-        plt.stem(nIndx.flatten(), [.3*np.min(X_negative)]*len(nIndx.flatten()))
-        plt.title(title)
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        plt.show()
-        plt.close()
-
+    
     
 
     def _plotUtills(self, input, title = None, x_label = None, y_label = None,x = None, xscale = None):
@@ -339,7 +365,7 @@ class IQ:
                         frame = method(frame = frame, col_name = col_name, **methods[method_nm])
                     except:
                         if self.Warnings:
-                            print("Warning: args not applied")
+                            print("**** Warning: args not applied ****")
                         frame = method(frame = frame, col_name = col_name)
                 else:
                     frame = method(frame = frame, col_name = col_name)
