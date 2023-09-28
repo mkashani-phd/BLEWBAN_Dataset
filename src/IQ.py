@@ -214,17 +214,24 @@ class IQ:
                 print("Warning: (butter) No filter sampling frequency specified, using default Fs of {}Msps".format(Fs/1e6))
         return self.inputCheck(frame, method=self._butter, col_name = col_name, args={"cutoff": cutoff, "Fs": Fs})
     
-    def _downSample(self, input, downSampleRate =2):
-        return input[:: downSampleRate]
-    def downSample(self, frame: np.ndarray | pd.DataFrame = None, downSampleRate = 2, col_name = None):
-        return self.inputCheck(frame, method=self._downSample, col_name = col_name, args = {"downSampleRate": downSampleRate})
+    def _downSample(self, input, downSampleRate =2, shift = 0):
+        return input[shift:: downSampleRate]
+    def downSample(self, frame: np.ndarray | pd.DataFrame = None, downSampleRate = 2, shift = 0, col_name = None):
+        return self.inputCheck(frame, method=self._downSample, col_name = col_name, args = {"downSampleRate": downSampleRate, "shift": shift})
     
     def _upSample(self, input, upSampleRate =2):
         return np.repeat(input, upSampleRate)
     def upSample(self, frame: np.ndarray | pd.DataFrame = None, upSampleRate = 2, col_name = None):
         return self.inputCheck(frame, method=self._upSample, col_name = col_name, args = {"upSampleRate": upSampleRate})
     
-
+    def _scalePhaseGradientToHz(self, input, Fs = Fs):
+        return input * Fs / (2*np.pi)
+    def scalePhaseGradientToHz(self, frame: np.ndarray | pd.DataFrame = None, col_name = None, Fs = None):
+        if Fs is None:
+            Fs = self.Fs
+            if self.Warnings:
+                print("Important Warning: (scalePhaseGradientToHz) No sampling frequency specified, using default Fs of {}Msps.".format(Fs/1e6))
+        return self.inputCheck(frame, method=self._scalePhaseGradientToHz, col_name = col_name, args = {"Fs": Fs})
 
     def keepPositive(self, samples):
         sam = samples.copy()
@@ -235,13 +242,30 @@ class IQ:
         sam[sam>0] = 0
         return sam
 
+
+    def _bitMetaDataGenerator(self, sample , indx, bitsPerSample):
+        return [
+                {
+                    'samples': sample[x[0]:x[1]],
+                    'numberOfBits':round((x[1] - x[0])/bitsPerSample), 
+                    'indxBegining': x[0], 'indxEnd': x[1], 
+                    'len': x[1] - x[0], 'slope':1,
+                    'overshoot': np.max(np.abs(sample[x[0]:x[1]])),
+                    # 'undershoot': np.min(np.abs(sample[x[0]:x[1]])),
+                    'std': np.std(sample[x[0]:x[1]]),
+                    'mean': np.mean(np.abs(sample[x[0]:x[1]])),
+                } 
+                for x in indx if np.max(np.abs(sample[x[0]:x[1]])) > 60000 ## will remove the scaled phase gradient bits that are not bits  
+               ]
+
+
     def nonZeroGrouper(self, samples,biggerThan = None, smallerThan = None ,Fs = Fs, noGroupBefore = None):
         if smallerThan is None:
-            smallerThan = 1000*Fs/self.Fs
+            smallerThan = 10000*Fs/self.Fs
         if biggerThan is None:
-            biggerThan = 82*Fs/self.Fs
+            biggerThan = 10*Fs/self.Fs
         if noGroupBefore is None:
-            noGroupBefore = 1100*Fs/self.Fs
+            noGroupBefore = 0*Fs/self.Fs
             if self.Warnings:
                 print("Warning: (nonZeroGrouper) No noGroupBefore specified, using default noGroupBefore of {}".format(noGroupBefore) )
 
@@ -254,6 +278,7 @@ class IQ:
             if temp[0] > noGroupBefore: # no bits befor 1100 samples at 100e6 sample rate
                 framesIndex.append([temp[0],temp[-1]])
         return np.array(framesIndex)
+
 
 
     # the default values are for 100Msps
@@ -271,27 +296,25 @@ class IQ:
             if self.Warnings:
                 print("Warning: (bitFinderFromPhaseGradient) No frame smaller than specified, using default smallerThan of {}".format(smallerThan) )
         
-        print(bitsPerSample, smallerThan, biggerThan)
         X_positive = self.keepPositive(sample)
         X_negative = self.keepNegative(sample)
         pIndx = self.nonZeroGrouper(X_positive, Fs=Fs, biggerThan = biggerThan, smallerThan = smallerThan, noGroupBefore = noGroupBefore)
         nIndx = self.nonZeroGrouper(X_negative, Fs=Fs, biggerThan = biggerThan, smallerThan = smallerThan, noGroupBefore = noGroupBefore)
-        pIndx_meta = [{'samples': sample[x[0]:x[1]], 'numberOfBits':(x[1] - x[0])/bitsPerSample, 'indxBegining': x[0], 'indxEnd': x[1], 'len': x[1] - x[0], 'slope':'positive'} for x in pIndx]
-        nIndx_meta = [{'samples': sample[x[0]:x[1]], 'numberOfBits':(x[1] - x[0])/bitsPerSample,'indxBegining': x[0], 'indxEnd': x[1], 'len': x[1] - x[0], 'slope':'negative'} for x in nIndx]
+        pIndx_meta = self._bitMetaDataGenerator(sample, pIndx, bitsPerSample)
+        nIndx_meta = self._bitMetaDataGenerator(sample, nIndx, bitsPerSample)
     
         if plot:
             plt.figure(figsize=(20,3), dpi=100)
             plt.plot(np.zeros(max(len(X_positive),len(X_negative))))
-            plt.plot(X_positive)
-            plt.plot(X_negative)
+            plt.plot(sample)
             plt.stem(pIndx.flatten(), [.3*np.max(X_positive)]*len(pIndx.flatten()) ,'r')
             plt.stem(nIndx.flatten(), [.3*np.min(X_negative)]*len(nIndx.flatten()))
             plt.title(title)
             plt.xlabel(x_label if x_label is not None else 'Samples')
-            plt.ylabel(y_label if y_label is not None else 'Freq. around Fc')
+            plt.ylabel(y_label if y_label is not None else 'Freq. Deviation (Hz)')
             plt.show()
             plt.close()
-        return sorted(pIndx_meta + nIndx_meta, key=lambda x: x["indxBegining"])
+        return pd.DataFrame(sorted(pIndx_meta + nIndx_meta, key=lambda x: x["indxBegining"]))
     
     def bitFinderFromPhaseGradient(self, frame: np.ndarray | pd.Series = None, col_name = None, Fs = None, bitsPerSample = None, biggerThan = None, smallerThan = None, noGroupBefore = None,plot = False, title = None, x_label = None, y_label = None):
         if Fs is None:
