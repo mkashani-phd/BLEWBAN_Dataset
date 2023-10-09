@@ -5,10 +5,6 @@ The advantages of this dataset is:
 - Recording in anechoic chamber to reduce unwanted signals or interference.
 - On-body recording on 12 different locations including: both left and right head, arm, wrist, chest, front and back torso (waist).  
 - Off-body recording with the same devices at 7-different orientations
- 
-There is ongoing research on analyzing the on-body data. The plot bellow shows the classification results of **12 on-Body** devices in moving and static body positions.
-
-![img](src/img/results.png)
   
 ## How to access dataset
 Python tools in this repository provide a user-friendly access to the dataset stored in a **MongoDB database**.
@@ -68,6 +64,11 @@ Since storing Complex numbers is not possible in the MongoDB database columns _I
 ``` python
 df['frame'] = query.apply(lambda x: x['I'] + np.dot(x['Q'],1j), axis=1)
 ```
+
+# Examples of the BLE-WBAN
+There is ongoing research on analyzing the on-body data. The plot below shows the classification results of **12 on-Body** devices in moving and static body positions.
+
+![img](src/img/results.png)
 
 
 
