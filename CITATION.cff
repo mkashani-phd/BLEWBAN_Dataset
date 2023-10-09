@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Kashani"
+  given-names: "SeyedMohammad"
+  orcid: "https://orcid.org/0009-0005-9232-0451"
+- family-names: "Sherazi"
+  given-names: "Syed"
+- family-names: "Khokhar"
+  given-names: "Ashfaq"
+- family-names: "Kim"
+  given-names: "Sang"
+- family-names: "Nait-Abdesselam"
+  given-names: "Farid"
+  
+title: "BLE-WBAN Dataset Tools"
+version: 0.0.1
+doi: 10.21227/mtg7-eb43
+date-released: 09-22-2023
+url: "https://github.com/mkashani-phd/BLEWBAN_Dataset"
