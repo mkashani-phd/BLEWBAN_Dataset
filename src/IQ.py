@@ -87,7 +87,7 @@ class IQ:
                 else:
                     res = input.apply(lambda x: method(x['frame']) , axis=1)
             elif 'I' in input.columns and 'Q' in input.columns:
-                res = input.apply(lambda x: method(x['I'] + np.dot(x['Q'],1j)) , axis=1)
+                res = input.apply(lambda x: method(x['I'] + np.dot(x['Q'],1j),**args) , axis=1)
             else:  
                 print("error: input does not contain frame or I/Q columns")
 
