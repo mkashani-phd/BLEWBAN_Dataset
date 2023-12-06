@@ -4,3 +4,4 @@ matplotlib
 pymongo
 scipy
 scikit-learn
+keras
