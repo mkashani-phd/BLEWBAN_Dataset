@@ -1,7 +1,7 @@
 # EXAMPLES
 In this folder we are exploring the IQ package and demonstrate some classification examples using Deep Learning.
 
-For a quick start please check [CNN_BLEWBAN]{https://colab.research.google.com/drive/1mY_gzbL6OIYSIrTMHnofLrjAYQz99-Es?usp=sharing} on Google colab.
+For a quick start please check [CNN_BLEWBAN](https://colab.research.google.com/drive/1mY_gzbL6OIYSIrTMHnofLrjAYQz99-Es?usp=sharing) on Google colab.
 
 # Creating the dataframe
 As the [readme.md]()
