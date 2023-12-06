@@ -1,7 +1,10 @@
 # EXAMPLES
 In this folder we are exploring the IQ package and demonstrate some classification examples using Deep Learning.
 
-For a quick start please check [CNN_BLEWBAN](https://colab.research.google.com/drive/1mY_gzbL6OIYSIrTMHnofLrjAYQz99-Es?usp=sharing) on Google colab.
+## BLEWBAN tutorial
+The Analysis.ipynb has a thorough explanation of the BLEWBAN and the powerfull IQ package that is in this repository. You can find this code on the [Google colab here]([url](https://colab.research.google.com/drive/1MDBT2rkZK7mvF0-5CpkBp85WYFNymxvO?usp=drive_link)) where you can run the command online.
+
+For a quick start please check [CNN_BLEWBAN]([url]https://colab.research.google.com/drive/1mY_gzbL6OIYSIrTMHnofLrjAYQz99-Es?usp=sharing) on Google colab.
 
 # Creating the dataframe
 As the [readme.md]()
