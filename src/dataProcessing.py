@@ -65,6 +65,7 @@ class IQdata:
         if Fc is not None:
             self.Fc = Fc
         self.tindx = tindx.reshape(-1,2)
+        print("Fc: ",self.Fc," Fs: ",self.Fs)
         [i for i in range(self.LEN) if self.channelDetection(i) in [37,38,39]]
 
     def isList(self, input):
@@ -216,12 +217,13 @@ class IQdata:
 
         return metaData
     
-    def demodulator(self,frame_nr:int | np.ndarray):
+    def demodulate(self,frame_nr:int | np.ndarray):
         frame = self.inputCheck(frame_nr)
         chnl = self.channelDetection(frame)
         Fc = self.BLEChnls[chnl]
         diffFc = (self.Fc - Fc) / (self.Fs/len(frame))
         demod = frame * np.exp(2j*np.pi*diffFc*np.linspace(0,len(frame),len(frame))/len(frame))
+        
         return demod
             
 
@@ -243,18 +245,26 @@ class IQdata:
         sin = np.imag(frame)*np.cos(2*np.pi* Fc * np.linspace(0,len(frame),len(frame))/Fs)
         return cos + sin
 
+    def phase(self,frame_nr:int | np.ndarray):
+        frame = self.inputCheck(frame_nr)
+        return np.unwrap(np.angle(frame))
+    
+    def unwrapPhase(self,frame_nr:int | np.ndarray):
+        frame = self.inputCheck(frame_nr)
+        return np.unwrap(np.angle(frame))
+    
     def demodAndPhase(self,  frm_nr, interval = [0,-1], chnl = -1):
         frame = self.inputCheck(frm_nr)
         if self.channelDetection(frm_nr) != chnl and chnl != -1:
             return 0, 0
-        demod = self.demodulator(frame)
+        demod = self.demodulate(frame)
         phase = np.unwrap(np.angle(demod))
         return demod[interval[0]:interval[1]],phase[interval[0]:interval[1]]
         
 
     def decode(self, frm_nr,signal = [1000,-20], bitSamplePeriod = 92,lpf = None,plot = False):
         frame = self.inputCheck(frm_nr)
-        demod = self.demodulator(frame)
+        demod = self.demodulate(frame)
         ### low pass filtering ##
         if lpf is None: 
             t= np.linspace(.01,1,100) # has to be automated eventually 
@@ -418,7 +428,7 @@ class Utills:
     def frame_subtractor(self,x, y, offSet: int = 0):
             return x[offSet: min(len(x), len(y))] - y[0: min(len(x),len(y)) - offSet]
 
-    def plotter(self,IQdata,tindx, batch, frameShowLimit = -1,info = True,fft = False,compression_ratio = 15):
+    def plotter(self,IQdata,tindx, batch, frameShowLimit = -1,info = True,fft = False,compression_ratio = 15, title = None):
         if frameShowLimit == -1 or frameShowLimit > len(IQdata.TotalFramesIndex):
             frameShowLimit = len(IQdata.TotalFramesIndex)
         if batch == -1:
@@ -460,6 +470,8 @@ class Utills:
             plt.plot(np.abs(x))
             plt.xlabel("time (s)")
             plt.ylabel("amplitude")
+            if title is not None:
+                plt.title(title)
             plt.show()
             plt.close()
 
