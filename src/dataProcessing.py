@@ -52,20 +52,24 @@ class IQdata:
     TotalFramesIndex = None
     tindx = None
     LEN = 0
-    Fc = 2.4e9
-    Fs = 100e6
+ 
 
     def __init__(self, path, samples,tindx,Fc = None, Fs = None):
         self.path = path
         self.samples = samples
         self.TotalFramesIndex = self.frameFinder(samples)
         self.LEN = len(self.TotalFramesIndex)
-        if Fs is not None:
+        if Fs is None:
+            self.Fs = 100e6
+        else:
             self.Fs = Fs
-        if Fc is not None:
+        if Fc is None:
+            self.Fc = 2.444e9
+        else:
             self.Fc = Fc
+
         self.tindx = tindx.reshape(-1,2)
-        print("Fc: ",self.Fc," Fs: ",self.Fs)
+
         [i for i in range(self.LEN) if self.channelDetection(i) in [37,38,39]]
 
     def isList(self, input):
@@ -109,17 +113,13 @@ class IQdata:
         frame = self.inputCheck(frame_nr)[100:-100]
         return 10*np.log(np.average(np.sqrt(np.imag(frame)**2 + np.real(frame)**2)))  
 
-    def channelDetection(self, frame_nr:int | np.ndarray, Fc = None, Fs = None):
-        if Fc is None:
-            Fc = self.Fc
-        if Fs is None:
-            Fs = self.Fs
+    def channelDetection(self, frame_nr:int | np.ndarray):
         frame = self.inputCheck(frame_nr)
         fft = self.fft(frame)
         absfft = np.abs(fft)
         n0 = np.where(absfft == np.max(absfft))[0][0] 
-        f= np.arange(-Fs/2,Fs/2,Fs/len(absfft))
-        c0 = f[n0] + Fc
+        f= np.arange(-self.Fs/2,self.Fs/2,self.Fs/len(absfft))
+        c0 = f[n0] + self.Fc
         try:
             return np.where(abs(self.BLEChnls-c0) <1e6)[0][0]
         except:
