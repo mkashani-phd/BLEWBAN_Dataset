@@ -199,13 +199,17 @@ class IQdata:
         metaData['Fc'] = self.Fc
         metaData['gain'] = self.path.split('/')[-1].split('_')[3]
         metaData['frameTime'] = self.tindx[frame_nr].tolist()
+        metaData['previousFrameTime'] = self.tindx[frame_nr-1].tolist()
+        metaData['nextFrameTime'] = self.tindx[frame_nr+1].tolist()
         metaData['lenFrame'] = self.tindx[frame_nr][1] - self.tindx[frame_nr][0]
+        metaData['timeTillNextFrame'] = self.tindx[frame_nr+1][0] - self.tindx[frame_nr][1]
         metaData['frameChnl'] = int(self.channelDetection(frame_nr))
         metaData['rssi'] = self.rssi(frame_nr)
 
         
         t= np.linspace(.01,1,60)
-        decoded = self.decode(frame_nr, lpf = np.sin(t)/t)
+        decoded = self.decode(frame_nr, lpf = np.sin(t)/t) 
+
         metaData['frameDecode'] = decoded[1]
         metaData['bitLen'] = decoded[2].tolist()
         metaData['max_gradient_unwrapped_phase'] = decoded[3].tolist()
@@ -247,11 +251,11 @@ class IQdata:
 
     def phase(self,frame_nr:int | np.ndarray):
         frame = self.inputCheck(frame_nr)
-        return np.unwrap(np.angle(frame))
+        return np.angle(frame)
     
     def unwrapPhase(self,frame_nr:int | np.ndarray):
         frame = self.inputCheck(frame_nr)
-        return np.unwrap(np.angle(frame))
+        return np.unwrap(frame)
     
     def demodAndPhase(self,  frm_nr, interval = [0,-1], chnl = -1):
         frame = self.inputCheck(frm_nr)
@@ -260,17 +264,58 @@ class IQdata:
         demod = self.demodulate(frame)
         phase = np.unwrap(np.angle(demod))
         return demod[interval[0]:interval[1]],phase[interval[0]:interval[1]]
-        
+    
+    def smooth(self, window_len=11,window='hanning'):
+        """smooth the data using a window with requested size.
+        This method is based on the convolution of a scaled window on the signal.
+        The signal is prepared by introducing reflected copies of the signal 
+        (with the window size) in both ends so that transient parts are minimized
+        in the begining and end part of the output signal.
+        input:
+            window_len: the dimension of the smoothing window; 
+                        should be an odd integer
+            window: the type of window from 'flat', 'hanning', 'hamming', 
+                    'bartlett', 'blackman'
+                    flat window will produce a moving average smoothing.
+        output:
+            the smoother FIR filter
 
-    def decode(self, frm_nr,signal = [1000,-20], bitSamplePeriod = 92,lpf = None,plot = False):
+        see also: 
+        numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, 
+        numpy.convolve scipy.signal.lfilter"""
+            
+        # if x.ndim != 1:
+        #     raise ValueError( "smooth only accepts 1 dimension arrays.")
+
+        # if x.size < window_len:
+        #     raise ValueError( "Input vector needs to be bigger than window size.")
+        
+        # if window_len<3:
+        #     return x
+        
+        if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+            raise ValueError( f"Window is on of '{'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}'")
+        
+        # s=np.r_[x[window_len-1:0:-1],x,x[-1:-window_len:-1]]
+        
+        if window == 'flat': #moving average
+            w=np.ones(window_len,'d')
+        else:
+            w=eval( f"np.{window}(window_len)")
+        return w/w.sum()
+            
+
+    def decode(self, frm_nr,signal = [1000,-20], bitSamplePeriod = 92,lpf = None,plot = False, title = None):
         frame = self.inputCheck(frm_nr)
         demod = self.demodulate(frame)
         ### low pass filtering ##
         if lpf is None: 
             t= np.linspace(.01,1,100) # has to be automated eventually 
             lpf = np.sin(t)/t
+        demod = demod[signal[0]:signal[1]]
         res = np.convolve(demod,lpf)
-        res = res[signal[0]:signal[1]]
+        res = res[int(len(lpf)/2-1):-int(len(lpf)/2)]
+
         phi = np.unwrap(np.angle(res))
 
         #adding zero to begining and end
@@ -373,6 +418,9 @@ class IQdata:
                 plt.text(np.average(i)-20,-maximum/5, str(nr_bit) )
                 # total_nr_bits += nr_bit
             # print(total_nr_bits)
+            plt.xlabel("sample")
+            if title is not None:
+                plt.title(title)
             plt.show()
 
         return res, resInHex, bitLen[0:-1], max_gradient_unwrapped_phase[0:-1]
