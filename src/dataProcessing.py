@@ -164,6 +164,8 @@ class IQdata:
             
         elif metaData['test'] == "onBody":
             metaData['dvc'] = temp[5]
+            metaData['txPower'] = '9dbm'
+
             metaData['placement'] = self.onBodyMap[int(temp[5])][0]
             metaData['side'] = self.onBodyMap[int(temp[5])][1]
             metaData['pos'] = temp[7]
@@ -199,20 +201,32 @@ class IQdata:
         metaData['Fc'] = self.Fc
         metaData['gain'] = self.path.split('/')[-1].split('_')[3]
         metaData['frameTime'] = self.tindx[frame_nr].tolist()
-        metaData['previousFrameTime'] = self.tindx[frame_nr-1].tolist()
-        metaData['nextFrameTime'] = self.tindx[frame_nr+1].tolist()
+        if frame_nr != 0:
+            metaData['previousFrameTime'] = self.tindx[frame_nr-1].tolist()
+        else:
+            metaData['previousFrameTime'] = [-1,-1]
+        if frame_nr != self.LEN - 1:
+            metaData['nextFrameTime'] = self.tindx[frame_nr+1].tolist()
+            metaData['timeTillNextFrame'] = int(self.tindx[frame_nr+1][0] - self.tindx[frame_nr][1])
+
+        else:
+            metaData['nextFrameTime'] = [-1,-1]
+            metaData['timeTillNextFrame'] = -1
         metaData['lenFrame'] = self.tindx[frame_nr][1] - self.tindx[frame_nr][0]
-        metaData['timeTillNextFrame'] = self.tindx[frame_nr+1][0] - self.tindx[frame_nr][1]
         metaData['frameChnl'] = int(self.channelDetection(frame_nr))
         metaData['rssi'] = self.rssi(frame_nr)
 
         
-        t= np.linspace(.01,1,60)
-        decoded = self.decode(frame_nr, lpf = np.sin(t)/t) 
+        try:
+            decoded = self.decode(frame_nr, lpf = self.smooth(window_len=60,window='flat')) 
 
-        metaData['frameDecode'] = decoded[1]
-        metaData['bitLen'] = decoded[2].tolist()
-        metaData['max_gradient_unwrapped_phase'] = decoded[3].tolist()
+            metaData['frameDecode'] = decoded[1]
+            metaData['bitLen'] = decoded[2].tolist()
+            metaData['max_gradient_unwrapped_phase'] = decoded[3].tolist()
+        except:
+            metaData['frameDecode'] = []
+            metaData['bitLen'] = []
+            metaData['max_gradient_unwrapped_phase'] = []
 
         if include_frame:
             metaData['I'] = np.real(self.frameByNumber(frame_nr)).tolist()
