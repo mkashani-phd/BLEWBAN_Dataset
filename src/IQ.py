@@ -214,6 +214,52 @@ class IQ:
                 print("Warning: (butter) No filter sampling frequency specified, using default Fs of {}Msps".format(Fs/1e6))
         return self.inputCheck(frame, method=self._butter, col_name = col_name, args={"cutoff": cutoff, "Fs": Fs})
     
+
+    def _smooth(self, input, window_len=11,window='hanning'):
+        """smooth the data using a window with requested size.
+        This method is based on the convolution of a scaled window on the signal.
+        The signal is prepared by introducing reflected copies of the signal 
+        (with the window size) in both ends so that transient parts are minimized
+        in the begining and end part of the output signal.
+        input:
+            window_len: the dimension of the smoothing window; 
+                        should be an odd integer
+            window: the type of window from 'flat', 'hanning', 'hamming', 
+                    'bartlett', 'blackman'
+                    flat window will produce a moving average smoothing.
+        output:
+            the smoother FIR filter
+
+        see also: 
+        numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, 
+        numpy.convolve scipy.signal.lfilter"""
+            
+        # if x.ndim != 1:
+        #     raise ValueError( "smooth only accepts 1 dimension arrays.")
+
+        # if x.size < window_len:
+        #     raise ValueError( "Input vector needs to be bigger than window size.")
+        
+        # if window_len<3:
+        #     return x
+        
+        if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+            raise ValueError( f"Window is on of '{'flat', 'hanning', 'hamming', 'bartlett', 'blackman'}'")
+        
+        # s=np.r_[x[window_len-1:0:-1],x,x[-1:-window_len:-1]]
+        
+        if window == 'flat': #moving average
+            w=np.ones(window_len,'d')
+        else:
+            w=eval( f"np.{window}(window_len)")
+        
+        lpf = w/w.sum()
+        res = np.convolve(input,lpf)
+        return res[int(len(lpf)/2-1):-int(len(lpf)/2)]
+    
+    def smooth(self, frame: np.ndarray | pd.Series = None, col_name = None, window_len = 11, window = 'hanning'):
+        return self.inputCheck(frame, method=self._smooth, col_name = col_name, args={"window_len": window_len, "window": window})
+    
     def _downSample(self, input, downSampleRate =2, shift = 0):
         return input[shift:: downSampleRate]
     def downSample(self, frame: np.ndarray | pd.DataFrame = None, downSampleRate = 2, shift = 0, col_name = None):

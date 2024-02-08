@@ -155,12 +155,12 @@ class IQdata:
 
         metaData['SDR'] = self.path.split('/')[-4][-1]
         metaData['test'] = self.path.split('/')[-3]
+        metaData['antenna'] = self.path.split('/')[-1].split('_')[-1][0]
 
         if metaData['test'] == "offBody":
             metaData['dvc'] = temp[4]
             metaData['pos'] = temp[6]
             metaData['txPower'] = self.path.split('/')[-2].split('-')[-1]
-            metaData['antenna'] = self.path.split('/')[-1].split('_')[-1][0]
             
         elif metaData['test'] == "onBody":
             metaData['dvc'] = temp[5]
@@ -191,9 +191,9 @@ class IQdata:
             c = int(self.path.split('/')[-1].split('_')[-1][0]) - 1
             print(a,b,c,((not a) and (not b) and c) or ( (not a) and b and (not c)) or (a and (not b) and (not c)) or (a and b and c))
             if ((not a) and (not b) and c) or ( (not a) and b and (not c)) or (a and (not b) and (not c)) or (a and b and c):
-                metaData['antenna'] = 'right'
+                metaData['antenna_side'] = 'right'
             else:
-                metaData['antenna'] = 'left'
+                metaData['antenna_side'] = 'left'
             
 
 
