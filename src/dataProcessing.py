@@ -243,15 +243,7 @@ class IQdata:
         demod = frame * np.exp(2j*np.pi*diffFc*np.linspace(0,len(frame),len(frame))/len(frame))
         
         return demod
-            
 
-    def MACDetection(self,frame_nr:int | np.ndarray): #has to be implemented
-        return 0
-         
-
-    def frameAdjuster(self,frame_nr:int | np.ndarray): #has to be implemented
-        frame = self.frameByNumber(frame_nr)
-        return frame
 
     def reconstructor(self,frame_nr:int | np.ndarray,Fc = None, Fs = None):
         frame = self.inputCheck(frame_nr)
@@ -317,6 +309,12 @@ class IQdata:
         else:
             w=eval( f"np.{window}(window_len)")
         return w/w.sum()
+    
+
+    def filter(self,frame_nr:int | np.ndarray,window_len=11,window='hanning'):
+        frame = self.inputCheck(frame_nr)
+        w = self.smooth(window_len,window)
+        return np.convolve(frame,w,mode='same')
             
 
     def decode(self, frm_nr,signal = [1000,-20], bitSamplePeriod = 92,lpf = None,plot = False, title = None):
