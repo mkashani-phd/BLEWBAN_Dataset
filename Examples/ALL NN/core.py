@@ -34,8 +34,8 @@ sys.path.append('../../')
 import src.IQ as IQ
 
 # %%
-# myclient = pymongo.MongoClient("mongodb://127.0.0.1:27017/admin")
-myclient = pymongo.MongoClient("mongodb://test:12345678910111213@SG-pine-beat-9444-57323.servers.mongodirector.com:27017/BLE")
+myclient = pymongo.MongoClient("mongodb://127.0.0.1:27017/admin")
+# myclient = pymongo.MongoClient("mongodb://test:12345678910111213@SG-pine-beat-9444-57323.servers.mongodirector.com:27017/BLE")
 
 BLE = myclient["BLE"]
 
@@ -189,18 +189,19 @@ configurations = {
 queries = {
 
 
-    'E1':{'test': 'offBody', 'query':{'SDR':'1', 'antenna': '1', 'txPower': '9dbm', 'pos': '4'}, 'target':'dvc'}, # done
-    'E2':{'test':'offBody', 'query':{'SDR':'1', 'antenna': '1', 'txPower': '9dbm', 'dvc': '6'}, 'target':'pos'}, # done
-    'E3':{'test':'offBody', 'query':{'antenna': '1', 'txPower': '9dbm', }, 'target':'pos'},# done
-    'E4':{'test':'offBody', 'query':{'antenna': '1', 'txPower': '9dbm', }, 'target':'dvc'},# done
-    'E5':{'test':'offBody', 'query':{'SDR': '1', 'txPower': '9dbm', }, 'target':'pos'},# done
-    'E6':{'test':'offBody', 'query':{'SDR': '1', 'txPower': '9dbm',}, 'target':'dvc'},# done
+    # 'E1':{'test': 'offBody', 'query':{'SDR':'1', 'antenna': '1', 'txPower': '9dbm', 'pos': '4'}, 'target':'dvc'}, # done
+    # 'E2':{'test':'offBody', 'query':{'SDR':'1', 'antenna': '1', 'txPower': '9dbm', 'dvc': '6'}, 'target':'pos'}, # done
+    # 'E3':{'test':'offBody', 'query':{'antenna': '1', 'txPower': '9dbm', }, 'target':'pos'},# done
+    # 'E4':{'test':'offBody', 'query':{'antenna': '1', 'txPower': '9dbm', }, 'target':'dvc'},# done
+    # 'E5':{'test':'offBody', 'query':{'SDR': '1', 'txPower': '9dbm', }, 'target':'pos'},# done
+    # 'E6':{'test':'offBody', 'query':{'SDR': '1', 'txPower': '9dbm',}, 'target':'dvc'},# done
 
-    'E7':{'test':'onBody', 'query':{'pos':'static','antenna_side':'left'}, 'target':'dvc'},
-    'E8':{'test':'onBody', 'query':{'pos':'static','antenna_side':'right'}, 'target':'dvc'},
-    'E9':{'test':'onBody', 'query':{'pos':'moving','antenna_side':'right'}, 'target':'dvc'},# done
-    'E10':{'test':'onBody', 'query':{'pos':'static'}, 'target':'dvc'}, # done
-    'E11':{'test':'onBody', 'query':{'pos':'moving'}, 'target':'dvc'}, # done
+    # 'E7':{'test':'onBody', 'query':{'pos':'static','antenna_side':'left'}, 'target':'dvc'},
+    # 'E8':{'test':'onBody', 'query':{'pos':'static','antenna_side':'right'}, 'target':'dvc'},
+    # 'E9':{'test':'onBody', 'query':{'pos':'moving','antenna_side':'right'}, 'target':'dvc'},# done
+    # 'E10':{'test':'onBody', 'query':{'pos':'static'}, 'target':'dvc'}, # done
+    # 'E11':{'test':'onBody', 'query':{'pos':'moving'}, 'target':'dvc'}, # done
+    'E12':{'test':'onBody', 'query':{}, 'target':'dvc'}, # done
 }
 
 
