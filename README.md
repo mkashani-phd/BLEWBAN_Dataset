@@ -7,13 +7,20 @@ The advantages of this dataset is:
 - On-body recording on 12 different locations including: both left and right head, arm, wrist, chest, front and back torso (waist).  
 - Off-body recording with the same devices at 7-different orientations
 
+## Google colab examples
+- [Tutorial](https://colab.research.google.com/drive/1MDBT2rkZK7mvF0-5CpkBp85WYFNymxvO?usp=sharing)
+- [CNN example](https://colab.research.google.com/drive/1mY_gzbL6OIYSIrTMHnofLrjAYQz99-Es)
+
 ## IEEE WCNC presentation YouTube Overview
 [![IMAGE IEEE WCNC 2024 presentation](https://img.youtube.com/vi/Q2jhC9VyVHY/0.jpg)](https://www.youtube.com/watch?v=Q2jhC9VyVHY)
 
-  
+
 ## How to access dataset
-Python tools in this repository provide a user-friendly access to the dataset stored in a **MongoDB database**. On the other hand the raw files are available on [raw dataset](10.21227/mtg7-eb43). In the RAWFileProcessing folder the tutorial.ipynb notebook provides a user friendly introduction of how to manage handle the raw files.
-However, to use this dataset you don't need to download the raw files (22GB) and locally manage them. We provide a MongoDB database that can easily run queries in multiple languages even on online platforms such as Google Colab (example [here](https://colab.research.google.com/drive/1MDBT2rkZK7mvF0-5CpkBp85WYFNymxvO?usp=sharing)). Supported languages can be found [here](https://www.mongodb.com/languages). 
+### Raw recording files
+the raw files are available on [raw dataset](10.21227/mtg7-eb43). In the RAWFileProcessing folder the tutorial.ipynb notebook provides a user friendly introduction of how to manage handle the raw files.
+
+### MongoDB database
+However, the Python tools in this repository provide a user-friendly access to the dataset stored in a **MongoDB database**. A MongoDB database that can easily run queries in multiple languages even on online platforms such as Google Colab (example [here](https://colab.research.google.com/drive/1MDBT2rkZK7mvF0-5CpkBp85WYFNymxvO?usp=sharing)). Supported languages can be found [here](https://www.mongodb.com/languages). 
 
 An example of how to perform a query and store the results in a Pandas data frame on a Google Colab is available !
 
