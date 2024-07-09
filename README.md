@@ -1,12 +1,15 @@
 # BLEWBAN_Dataset
 
-[![IMAGE IEEE WCNC 2024 presentation](https://img.youtube.com/vi/Q2jhC9VyVHY/0.jpg)](https://www.youtube.com/watch?v=Q2jhC9VyVHY)
 BLEWBAN is a raw RF dataset of Bluetooth Low Energy (BLE) signals focused on Wireless Body Area Netwrok (WBAN). It consists of on-body and off-body recordings usign ESP32s in BLE mode.
 The advantages of this dataset is:
 - It covers the entire bandwith of the BLE technology.(recorded at 2.44GHz at 100MSps)
 - Recording in anechoic chamber to reduce unwanted signals or interference.
 - On-body recording on 12 different locations including: both left and right head, arm, wrist, chest, front and back torso (waist).  
 - Off-body recording with the same devices at 7-different orientations
+
+## IEEE WCNC presentation YouTube Overview
+[![IMAGE IEEE WCNC 2024 presentation](https://img.youtube.com/vi/Q2jhC9VyVHY/0.jpg)](https://www.youtube.com/watch?v=Q2jhC9VyVHY)
+
   
 ## How to access dataset
 Python tools in this repository provide a user-friendly access to the dataset stored in a **MongoDB database**. On the other hand the raw files are available on [raw dataset](10.21227/mtg7-eb43). In the RAWFileProcessing folder the tutorial.ipynb notebook provides a user friendly introduction of how to manage handle the raw files.
