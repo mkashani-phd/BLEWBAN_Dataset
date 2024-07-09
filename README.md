@@ -1,6 +1,6 @@
 # BLEWBAN_Dataset
 
-[!IMAGE[IEEE WCNC 2024 presentation](https://img.youtube.com/vi/Q2jhC9VyVHY/0.jpg)](https://www.youtube.com/watch?v=Q2jhC9VyVHY)
+[![IMAGE IEEE WCNC 2024 presentation](https://img.youtube.com/vi/Q2jhC9VyVHY/0.jpg)](https://www.youtube.com/watch?v=Q2jhC9VyVHY)
 BLEWBAN is a raw RF dataset of Bluetooth Low Energy (BLE) signals focused on Wireless Body Area Netwrok (WBAN). It consists of on-body and off-body recordings usign ESP32s in BLE mode.
 The advantages of this dataset is:
 - It covers the entire bandwith of the BLE technology.(recorded at 2.44GHz at 100MSps)
