@@ -17,7 +17,7 @@ The advantages of this dataset is:
 
 ## How to access dataset
 ### Raw recording files
-the raw files are available on [raw dataset](https://ieee-dataport.org/documents/ble-wban-rf-real-world-dataset-ble-devices-human-centric-healthcare-environments). In the RAWFileProcessing folder the tutorial.ipynb notebook provides a user friendly introduction of how to manage handle the raw files.
+the raw files are available on IEEE Dataport with the DOI : [https://dx.doi.org/10.21227/mtg7-eb43](https://dx.doi.org/10.21227/mtg7-eb43). In the RAWFileProcessing folder the tutorial.ipynb notebook provides a user friendly introduction of how to manage handle the raw files.
 
 ### MongoDB database
 However, the Python tools in this repository provide a user-friendly access to the dataset stored in a **MongoDB database**. A MongoDB database that can easily run queries in multiple languages even on online platforms such as Google Colab (example [here](https://colab.research.google.com/drive/1MDBT2rkZK7mvF0-5CpkBp85WYFNymxvO?usp=sharing)). Supported languages can be found [here](https://www.mongodb.com/languages). 
