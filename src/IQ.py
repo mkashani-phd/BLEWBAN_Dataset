@@ -58,7 +58,10 @@ class IQ:
         
 
         if self.isList(input):
-            return method(input)
+            if args is not None:
+                return method(input, **args)
+            else:
+                return method(input)
         
         elif self.isPandaDF(input):
             if isinstance(input, pd.Series):
@@ -152,7 +155,7 @@ class IQ:
         if Fs is None:
             Fs = self.Fs
             if self.Warnings:
-                print("Warning: (demodulate) No sampling frequency specified, using default Fs of {}Msps.".format(Fs/1e6))
+                print("Warning: (demodulate) No sampling frequency specified, using default Fs of {} MSps.".format(Fs/1e6))
         return self.inputCheck(frame, method=self._demodulate, col_name = col_name, args = {"Fs": Fs})
     
     def _removeDC(self, input):
@@ -328,17 +331,18 @@ class IQ:
 
 
     # the default values are for 100Msps
+    # the BLE symbol rate is 1 million symbol per second. 
     def _bitFinderFromPhaseGradient(self, sample, Fs= Fs, bitsPerSample = None, biggerThan = None, smallerThan = None , noGroupBefore = None, plot = False, col_name = None, title = None, x_label = None, y_label = None):
         if bitsPerSample is None:
-            bitsPerSample = 100*Fs/self.Fs
+            bitsPerSample = Fs/1e6
             if self.Warnings:
                 print("Warning: (bitFinderFromPhaseGradient) No bits per sample specified, using default bitsPerSample of {}".format(bitsPerSample) )
         if biggerThan is None:
-            biggerThan = 82*Fs/self.Fs
+            biggerThan = int(0.82*bitsPerSample)
             if self.Warnings:
                 print("Warning: (bitFinderFromPhaseGradient) No frame bigger than specified, using default biggerThan of {}".format(biggerThan) )
         if smallerThan is None:
-            smallerThan = 1000*Fs/self.Fs
+            smallerThan = int(100*bitsPerSample)
             if self.Warnings:
                 print("Warning: (bitFinderFromPhaseGradient) No frame smaller than specified, using default smallerThan of {}".format(smallerThan) )
         
