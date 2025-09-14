@@ -44,15 +44,15 @@ There are two databases available.
   
 BLE_metadata is the light version of the BLE excluding raw data. It contains basic time and frequency charectristics of the raw data and is much faster. On the other hand, The BLE database include raw recordings along with BLE_metadata.
   
-For **BLE** use the following connection string
+For **BLE** use the following connection string ("Deprecated. Use the Raw data from IEEE dataport and create your own local database")
 ```python
 client = pymongo.MongoClient("mongodb://test:12345678910111213@SG-pine-beat-9444-57323.servers.mongodirector.com:27017/BLE")
 BLE_WBAN = client["BLE"]
 ```
 
-Or for **BLE_metadata** use the following connection string
+Or for **BLE_metadata** use the following connection string ("the free tier could Only keep the Metadata for the onBody and some offBody data, so again use the raw data and create your own local MongoDB database")
 ```python
-client = pymongo.MongoClient("mongodb://test:12345678910111213@SG-pine-beat-9444-57323.servers.mongodirector.com:27017/BLE_metadata")
+client = pymongo.MongoClient("mongodb+srv://BLE_MetaData:e52OjDMF5KYM5GrS@cluster0.4bwryfc.mongodb.net/BLE_MetaData")
 BLE_WBAN = client["BLE_metadata"]
 ```
 
