@@ -17,6 +17,7 @@ from tensorflow.keras.layers import Dense, Conv1D, AveragePooling1D, Flatten, Dr
 from tensorflow.keras.callbacks import EarlyStopping
 
 import cvnn.layers as complex_layers
+import cvnn.activations 
 import cvnn.losses as complex_losses
 
 
@@ -71,14 +72,14 @@ def freqCreator():
 def CV_CNN(X_train, y_train_encoded, X_test, y_test_encoded, downSampleRate=1):
 
     inputs = complex_layers.complex_input(shape=(X_train.shape[1],1,))
-    x = complex_layers.ComplexConv1D(filters= 2, activation='cart_relu', kernel_size=max(5,128//downSampleRate))(inputs)
+    x = complex_layers.ComplexConv1D(filters= 2, activation=cvnn.activations.cart_relu, kernel_size=max(5,128//downSampleRate))(inputs)
     x = complex_layers.ComplexAvgPooling1D(pool_size=2)(x)
-    x = complex_layers.ComplexConv1D(filters= 2, activation='cart_relu', kernel_size=max(5,128//downSampleRate))(x)
+    x = complex_layers.ComplexConv1D(filters= 2, activation=cvnn.activations.cart_relu, kernel_size=max(5,128//downSampleRate))(x)
     x = complex_layers.ComplexAvgPooling1D(pool_size=2)(x)
     x = complex_layers.ComplexDropout(0.1/downSampleRate)(x)
     x = complex_layers.ComplexFlatten()(x)
     # c1 = complex_layers.ComplexDense(64, activation='cart_relu', kernel_regularizer=regularizers.L1(0.001))(c1)
-    x = complex_layers.ComplexDense(100, activation='convert_to_real_with_abs', kernel_regularizer=regularizers.L1(0.001))(x)
+    x = complex_layers.ComplexDense(100, activation=cvnn.activations.convert_to_real_with_abs, kernel_regularizer=regularizers.L1(0.001))(x)
     x = Dense(100, activation='relu', kernel_regularizer=regularizers.L1(0.001))(x)
     out = Dense(y_test_encoded.shape[1], activation='softmax')(x)  # 13 classes
 
@@ -149,8 +150,8 @@ def runForExperiment(df, target:str, mode:str ,query:dict, configurations:dict):
 
         X_train = tf.convert_to_tensor(X_train.tolist())
         X_test =  tf.convert_to_tensor(X_test.tolist())
-        y_train =  tf.convert_to_tensor(y_train.tolist())
-        y_test = tf.convert_to_tensor(y_test.tolist())
+        # y_train =  tf.convert_to_tensor(y_train.tolist())
+        # y_test = tf.convert_to_tensor(y_test.tolist())
 
         y_train_encoded = to_categorical(y_train)
         y_test_encoded = to_categorical(y_test)
@@ -208,7 +209,7 @@ queries = {
 # %%
 Modes = [
                 # 'freq', 
-                'IQSplit',
+                # 'IQSplit',
                 'CV_NN'
                 ]
 
